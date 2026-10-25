@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>รายงาน Computational Complexity Theory (ฉบับเต็ม)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Design Tokens & CSS Variables
+   ========================================================================== */
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-light: #64748b;
+  
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #e0f2fe;
+  --primary-border: #bae6fd;
+  
+  --accent: #0d9488;
+  --accent-light: #ccfbf1;
+  
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --fs-base: 18px;
+  --lh-base: 1.85;
+  --font-sans: 'Sarabun', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  
+  --svg-stroke: #334155;
+  --svg-fill-box: #f8fafc;
+  --svg-text: #0f172a;
+}
+
+[data-theme="dark"], @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --bg-subtle: #334155;
+    --bg-hover: #475569;
+    
+    --text-main: #f8fafc;
+    --text-muted: #cbd5e1;
+    --text-light: #94a3b8;
+    
+    --primary: #38bdf8;
+    --primary-hover: #7dd3fc;
+    --primary-light: #0369a1;
+    --primary-border: #0284c7;
+    
+    --accent: #2dd4bf;
+    --accent-light: #134e4a;
+    
+    --border-color: #334155;
+    --border-strong: #475569;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    
+    --svg-stroke: #94a3b8;
+    --svg-fill-box: #0f172a;
+    --svg-text: #f8fafc;
+  }
+}
+
+/* ==========================================================================
+   Base Styles & Reset
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+  scroll-padding-top: 130px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Progress bar at top */
+#progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  z-index: 1000;
+}
+
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  width: 0%;
+  transition: width 0.1s ease-out;
+}
+
+/* ==========================================================================
+   Header & Toolbar
+   ========================================================================== */
+header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+
+.top-bar {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controls-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-control {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-control:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.search-box {
+  position: relative;
+  flex-grow: 1;
+  max-width: 240px;
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 6px 12px 6px 32px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-box input:focus {
+  border-color: var(--primary);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-box svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  fill: var(--text-light);
+}
+
+/* Sub-nav tabs */
+#nav-scroll {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 8px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+#nav-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+#nav-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+#nav-scroll a {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+#nav-scroll a:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+#nav-scroll a.on {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Main Content & Document Layout
+   ========================================================================== */
+section { scroll-margin-top: 112px; }
+
+main {
+  max-width: 900px;
+  margin: 24px auto 80px;
+  padding: 0 16px;
+}
+
+.hero-banner {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 36px 28px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-banner h1 {
+  font-size: 2rem;
+  margin: 0 0 12px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.hero-banner .note {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Section Card */
+section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+section:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.page-badge {
+  display: inline-block;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--primary-border);
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 0 0 20px 0;
+  line-height: 1.3;
+  font-weight: 700;
+  border-bottom: 2px solid var(--primary-light);
+  padding-bottom: 8px;
+}
+
+h3 {
+  font-size: 1.15rem;
+  color: var(--text-main);
+  margin: 24px 0 10px 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+p {
+  margin: 12px 0;
+  color: var(--text-main);
+  text-align: justify;
+}
+
+/* Callouts / Formula Boxes */
+.callout-box {
+  background: var(--bg-subtle);
+  border-left: 4px solid var(--primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 14px 20px;
+  margin: 20px 0;
+}
+
+.callout-box p {
+  margin: 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Completion Checkbox */
+.done-container {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-strong);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-subtle);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.done:hover {
+  background: var(--bg-hover);
+}
+
+.done input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  background-color: var(--bg-card);
+}
+
+.done input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.done input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #white;
+  font-size: 14px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+}
+
+/* ==========================================================================
+   Tables & Visual Figures
+   ========================================================================== */
+.tw {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+  background: var(--bg-card);
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(0,0,0,0.015);
+}
+
+figure {
+  margin: 28px 0;
+  padding: 16px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+figure svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+figcaption {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+/* SVG styling overrides */
+svg text {
+  fill: var(--svg-text) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600;
+}
+
+svg .l, svg path, svg rect, svg circle, svg ellipse {
+  stroke: var(--svg-stroke) !important;
+  stroke-width: 2;
+}
+
+svg rect, svg circle, svg ellipse {
+  fill: var(--svg-fill-box) !important;
+}
+
+/* ==========================================================================
+   Focus & Accessibility
+   ========================================================================== */
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.highlight {
+  background-color: #fef08a;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Responsive Rules */
+@media (max-width: 640px) {
+  main {
+    padding: 0 12px;
+    margin-top: 16px;
+  }
+
+  section {
+    padding: 20px 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .hero-banner {
+    padding: 24px 18px;
+    border-radius: var(--radius-md);
+  }
+
+  .hero-banner h1 {
+    font-size: 1.5rem;
+  }
+
+  .top-bar {
+    padding: 8px 12px;
+  }
+
+  .search-box {
+    max-width: 100%;
+    order: 3;
+    width: 100%;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+</style>
+
+<style id="visual-polish">
+/* Visual refinement layer: presentation only; report text and functionality remain unchanged. */
+:root {
+  --bg-main: #f3f6fb;
+  --bg-card: #ffffff;
+  --bg-subtle: #f6f8fc;
+  --bg-hover: #e8eef7;
+  --text-main: #172033;
+  --text-muted: #526078;
+  --text-light: #718096;
+  --primary: #3157c8;
+  --primary-hover: #2446ad;
+  --primary-light: #edf1ff;
+  --primary-border: #cbd5ff;
+  --accent: #0d9488;
+  --accent-light: #d7f7f1;
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --shadow-sm: 0 2px 8px rgba(24, 39, 75, .045);
+  --shadow-md: 0 8px 24px rgba(24, 39, 75, .07);
+  --shadow-lg: 0 16px 38px rgba(24, 39, 75, .12);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-main: #0b1220;
+  --bg-card: #131e30;
+  --bg-subtle: #1b2940;
+  --bg-hover: #263750;
+  --text-main: #e9eef8;
+  --text-muted: #c0cce0;
+  --text-light: #94a6c2;
+  --primary: #8eabff;
+  --primary-hover: #b0c3ff;
+  --primary-light: #26365a;
+  --primary-border: #3a4f7b;
+  --accent: #5eead4;
+  --accent-light: #123e3b;
+  --border-color: #293951;
+  --border-strong: #40516c;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.14);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.20);
+  --shadow-lg: 0 16px 38px rgba(0,0,0,.28);
+  --svg-stroke: #b7c7e2;
+  --svg-fill-box: #17263c;
+  --svg-text: #edf3ff;
+}
+html { scroll-padding-top: 150px; }
+body {
+  background-image: radial-gradient(ellipse at 50% -20%, rgba(49,87,200,.075), transparent 55%);
+  letter-spacing: .005em;
+}
+header {
+  background: color-mix(in srgb, var(--bg-card) 91%, transparent);
+  backdrop-filter: blur(16px) saturate(145%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+}
+.top-bar { max-width: 1120px; padding-top: 13px; padding-bottom: 13px; }
+.brand-title { letter-spacing: -.025em; }
+#nav-scroll { max-width: 1120px; padding-bottom: 11px; gap: 8px; }
+#nav-scroll a { padding: 6px 14px; border: 1px solid transparent; }
+#nav-scroll a.on { box-shadow: 0 3px 10px rgba(49,87,200,.18); }
+.btn-control { min-height: 36px; }
+.btn-control:active { transform: translateY(1px); }
+.search-box input { min-height: 36px; }
+.search-box input:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent); }
+main { max-width: 1000px; margin-top: 30px; }
+.hero-banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(125deg, #263f9d 0%, #3157c8 48%, #0d9488 100%);
+  padding: clamp(28px, 5vw, 48px);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgba(39,72,164,.22);
+}
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 260px; height: 260px;
+  right: -75px; top: -105px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 28px rgba(255,255,255,.045), 0 0 0 58px rgba(255,255,255,.035);
+}
+.hero-banner h1 { max-width: 760px; font-size: clamp(1.65rem, 3.6vw, 2.45rem); letter-spacing: -.035em; }
+.hero-banner .note { max-width: 760px; font-size: 1rem; }
+.stats-bar { flex-wrap: wrap; gap: 10px 22px; }
+.stat-item { padding: 7px 12px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(255,255,255,.09); }
+section {
+  padding: clamp(22px, 4vw, 38px);
+  margin-bottom: 26px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  scroll-margin-top: 150px;
+}
+section:hover { transform: translateY(-1px); }
+.page-badge {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 5px 12px;
+  letter-spacing: .04em;
+}
+h2 {
+  font-size: clamp(1.3rem, 2.5vw, 1.65rem);
+  letter-spacing: -.018em;
+  padding-bottom: 13px;
+  border-bottom-width: 1px;
+  border-image: linear-gradient(90deg, var(--primary), transparent) 1;
+}
+h3 { margin-top: 28px; font-size: 1.12rem; line-height: 1.5; }
+p { line-height: 1.9; overflow-wrap: anywhere; }
+.callout-box {
+  border-left-width: 5px;
+  border-radius: 0 14px 14px 0;
+  padding: 18px 22px;
+  background: linear-gradient(110deg, var(--primary-light), var(--bg-subtle));
+}
+.callout-box p { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+.tw { box-shadow: var(--shadow-sm); }
+table { font-variant-numeric: tabular-nums; }
+th { background: var(--bg-subtle); }
+th, td { padding: 13px 16px; }
+tbody tr { transition: background-color .15s ease; }
+tbody tr:nth-child(even) { background: color-mix(in srgb, var(--bg-subtle) 62%, transparent); }
+tbody tr:hover { background: var(--primary-light); }
+figure {
+  padding: clamp(14px, 3vw, 22px);
+  border-radius: 16px;
+}
+figcaption { line-height: 1.6; }
+.done-container { margin-top: 28px; }
+.done { min-height: 44px; }
+.done:has(input:checked) {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+  background: var(--accent-light);
+}
+::selection { background: var(--primary-light); color: var(--text-main); }
+@media (min-width: 1100px) {
+  main { max-width: 1000px; }
+}
+@media (max-width: 640px) {
+  html { scroll-padding-top: 165px; }
+  .top-bar { gap: 10px; }
+  .brand-title { font-size: 1rem; }
+  .controls-group { gap: 6px; }
+  .btn-control { padding: 6px 10px; }
+  #nav-scroll { padding-left: 12px; padding-right: 12px; }
+  main { margin-bottom: 42px; }
+  .hero-banner { border-radius: 18px; }
+  .stats-bar { align-items: flex-start; flex-direction: column; }
+  section { scroll-margin-top: 165px; }
+  h3 { margin-top: 23px; }
+  p { text-align: left; }
+  th, td { padding: 10px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+@media print {
+  :root, :root[data-theme="dark"] {
+    color-scheme: light;
+    --bg-main: #fff; --bg-card: #fff; --bg-subtle: #f7f7f7;
+    --text-main: #111; --text-muted: #333; --text-light: #555;
+    --border-color: #ddd; --border-strong: #bbb; --primary: #2347a8;
+  }
+  body { background: #fff !important; color: #111 !important; font-size: 12pt; }
+  header, #progress-container, .done-container { display: none !important; }
+  main { max-width: none; margin: 0; padding: 0; }
+  .hero-banner { box-shadow: none; border-radius: 0; print-color-adjust: exact; }
+  section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; margin: 0 0 18px; padding: 22px; }
+  h2, h3 { break-after: avoid; }
+  figure, table { break-inside: avoid; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+
+</head>
+<body>
+
+<div id="progress-container">
+  <div id="progress-bar"></div>
+</div>
+
+<header>
+  <div class="top-bar">
+    <div class="brand-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Complexity Theory
+    </div>
+
+    <div class="search-box">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      <input type="text" id="searchInput" placeholder="ค้นหาเนื้อหา..." aria-label="ค้นหาเนื้อหาในเอกสาร">
+    </div>
+
+    <div class="controls-group">
+      <button class="btn-control" id="btn-theme" title="สลับธีม">🌙 Mode</button>
+      <button class="btn-control" id="m" aria-label="ลดขนาดตัวอักษร">A−</button>
+      <button class="btn-control" id="reset-fs" aria-label="รีเซ็ตขนาดตัวอักษร">100%</button>
+      <button class="btn-control" id="p" aria-label="เพิ่มขนาดตัวอักษร">A+</button>
+    </div>
+  </div>
+
+  <nav id="nav-scroll" aria-label="การนำทางตามหัวข้อ">
+    <!-- Links created dynamically -->
+  </nav>
+</header>
+
+<main>
+  <div class="hero-banner">
+    <h1>รายงานเรื่อง Computational Complexity Theory</h1>
+    <p class="note">เนื้อหาฉบับเต็ม จัดเรียงโครงสร้างให้อ่านง่าย รองรับการค้นหา และเลือกทำเครื่องหมาย "คัดแล้ว" ในแต่ละหน้าเพื่อบันทึกความก้าวหน้า</p>
+    <div class="stats-bar">
+      <div class="stat-item">📄 จำนวนทั้งหมด 11 หัวข้อ</div>
+      <div class="stat-item" id="completed-count">✅ คัดแล้ว 0/10 หน้า</div>
+    </div>
+  </div>
+
+  <section id="s1" data-t="หน้า 1">
+    <span class="page-badge">หน้า 1 จาก 10</span>
+    <h2>หน้าที่ 1: Introduction to Computational Complexity Theory</h2>
+    <h3>1.1 ความหมายของ Computational Complexity Theory</h3>
+    <p>Computational Complexity Theory หรือทฤษฎีความซับซ้อนในการคำนวณ เป็นสาขาหนึ่งของวิทยาการคอมพิวเตอร์ที่ศึกษาความยากของปัญหาการคำนวณ โดยพิจารณาทรัพยากรที่จำเป็นต้องใช้ในการแก้ปัญหา เช่น เวลาในการประมวลผล (Time Complexity) และหน่วยความจำ (Space Complexity) ทฤษฎีนี้ช่วยให้นักวิทยาการคอมพิวเตอร์เข้าใจว่าปัญหาแต่ละประเภทสามารถแก้ไขได้อย่างมีประสิทธิภาพหรือไม่ เมื่อขนาดของข้อมูลนำเข้าเพิ่มขึ้น</p>
+    <p>ในการเขียนโปรแกรม เราอาจพบว่ามีอัลกอริทึมหลายแบบที่สามารถแก้ปัญหาเดียวกันได้ แต่แต่ละแบบใช้เวลาและทรัพยากรแตกต่างกัน ตัวอย่างเช่น การค้นหาข้อมูลในรายชื่อที่มีจำนวนไม่มากสามารถทำได้โดยการตรวจสอบทีละรายการ แต่หากมีข้อมูลหลายล้านรายการ วิธีดังกล่าวอาจใช้เวลามาก การศึกษาเรื่องความซับซ้อนจึงช่วยให้สามารถเลือกวิธีแก้ปัญหาที่เหมาะสมกับขนาดข้อมูลและข้อจำกัดของระบบได้</p>
+    <p>นอกจากนี้ Computational Complexity Theory ยังศึกษาปัญหาที่มีความยากสูง เช่น ปัญหาการจัดเส้นทาง การจัดตารางงาน และการค้นหาคำตอบที่ดีที่สุดจากทางเลือกจำนวนมาก ปัญหาเหล่านี้บางประเภทมีจำนวนทางเลือกเพิ่มขึ้นอย่างรวดเร็วเมื่อข้อมูลเพิ่มขึ้นเพียงเล็กน้อย จึงอาจต้องใช้เวลาในการคำนวณสูงมากหากต้องตรวจสอบทุกทางเลือก</p>
+    
+    <h3>1.2 ความสำคัญของการศึกษาความซับซ้อนในการคำนวณ</h3>
+    <p>การศึกษาทฤษฎีความซับซ้อนมีความสำคัญต่อการออกแบบและพัฒนาซอฟต์แวร์ เพราะช่วยให้ทราบว่าอัลกอริทึมที่เลือกใช้มีประสิทธิภาพเพียงใด และจะยังทำงานได้ดีหรือไม่เมื่อปริมาณข้อมูลเพิ่มขึ้น ตัวอย่างเช่น ระบบฐานข้อมูล ระบบค้นหา ระบบขนส่ง และระบบวางแผนเส้นทาง ล้วนต้องจัดการข้อมูลจำนวนมากและต้องการคำตอบภายในเวลาที่เหมาะสม</p>
+    <p>อีกประการหนึ่ง ทฤษฎีนี้ช่วยให้นักพัฒนาเข้าใจข้อจำกัดของการหาคำตอบที่ดีที่สุด หากปัญหามีความซับซ้อนสูงมาก การค้นหาคำตอบที่ดีที่สุดทุกกรณีอาจไม่เหมาะสมในทางปฏิบัติ นักพัฒนาอาจเลือกใช้วิธีประมาณคำตอบหรือวิธีค้นหาแบบฮิวริสติกเพื่อให้ได้คำตอบที่ดีภายในเวลาจำกัด</p>
+    <p>ทฤษฎีนี้ยังมีความสำคัญต่อการเข้ารหัสข้อมูลและความปลอดภัยทางคอมพิวเตอร์ เพราะระบบรักษาความปลอดภัยบางประเภทอาศัยสมมติฐานว่าปัญหาทางคณิตศาสตร์บางอย่างยากต่อการแก้เมื่อไม่มีข้อมูลหรือกุญแจที่จำเป็น อย่างไรก็ตาม ความยากของปัญหาเพียงอย่างเดียวไม่ได้รับประกันความปลอดภัยของระบบทั้งหมด</p>
+    
+    <h3>1.3 ความแตกต่างระหว่าง Algorithm Complexity กับ Computational Complexity</h3>
+    <p>Algorithm Complexity คือการวิเคราะห์ทรัพยากรที่อัลกอริทึมหนึ่ง ๆ ใช้ในการแก้ปัญหา เช่น จำนวนขั้นตอนการทำงานหรือปริมาณหน่วยความจำที่ต้องใช้เมื่อขนาดข้อมูลเพิ่มขึ้น ตัวอย่างเช่น Linear Search มีความซับซ้อนด้านเวลาเป็น O(n) ในกรณีเลวร้ายที่สุด เพราะอาจต้องตรวจสอบข้อมูลครบทุกตำแหน่ง ส่วน Binary Search มีความซับซ้อนเป็น O(log n) เมื่อข้อมูลเรียงลำดับแล้ว</p>
+    <p>ในทางตรงกันข้าม Computational Complexity เน้นศึกษาความยากของปัญหาในภาพรวม รวมถึงการจำแนกปัญหาออกเป็นกลุ่ม เช่น P, NP, NP-Hard และ NP-Complete ตลอดจนศึกษาความสัมพันธ์ระหว่างกลุ่มปัญหาเหล่านี้</p>
+    <p>ดังนั้น Algorithm Complexity จึงเน้นว่าอัลกอริทึมที่กำหนดใช้ทรัพยากรมากน้อยเพียงใด ส่วน Computational Complexity เน้นว่าปัญหานั้นมีลักษณะความยากอย่างไร และมีวิธีแก้ที่มีประสิทธิภาพหรือไม่</p>
+    
+    <figure>
+      <svg viewBox="0 0 420 150" role="img" aria-label="เปรียบเทียบ Algorithm Complexity กับ Computational Complexity">
+        <rect class="l" x="10" y="20" width="180" height="50" rx="8"/>
+        <text x="100" y="42" text-anchor="middle">Algorithm</text>
+        <text x="100" y="62" text-anchor="middle">Complexity</text>
+        <path class="l" d="M100 70V100M92 92l8 8 8-8"/>
+        <rect class="l" x="10" y="100" width="180" height="40" rx="8"/>
+        <text x="100" y="125" text-anchor="middle">1 วิธี ใช้เวลาเท่าไร</text>
+        <rect class="l" x="230" y="20" width="180" height="50" rx="8"/>
+        <text x="320" y="42" text-anchor="middle">Computational</text>
+        <text x="320" y="62" text-anchor="middle">Complexity</text>
+        <path class="l" d="M320 70V100M312 92l8 8 8-8"/>
+        <rect class="l" x="230" y="100" width="180" height="40" rx="8"/>
+        <text x="320" y="125" text-anchor="middle">ตัวปัญหากำหนดความยาก</text>
+      </svg>
+      <figcaption>รูปที่ 1 เปรียบเทียบมุมมองของ Algorithm Complexity และ Computational Complexity</figcaption>
+    </figure>
+    
+    <h3>1.4 ตัวอย่างการประยุกต์ใช้</h3>
+    <p>ตัวอย่างการประยุกต์ใช้ ได้แก่ การออกแบบฐานข้อมูลที่ค้นหาข้อมูลได้รวดเร็ว การสร้างระบบขนส่งที่หาเส้นทางได้เหมาะสม การจัดตารางเรียนโดยลดเวลาว่างของห้องเรียน และการวางแผนการผลิตในโรงงานให้ใช้ทรัพยากรอย่างคุ้มค่า ความรู้เรื่องความซับซ้อนช่วยให้สามารถเลือกอัลกอริทึมที่เหมาะสมกับปัญหาแต่ละประเภทได้</p>
+    <p>สรุปได้ว่า Computational Complexity Theory เป็นพื้นฐานสำคัญในการทำความเข้าใจข้อจำกัดของการคำนวณ และเป็นจุดเริ่มต้นของการศึกษากลุ่มปัญหา P, NP, NP-Hard และ NP-Complete ในหัวข้อต่อไป</p>
+  </section>
+
+  <section id="s2" data-t="หน้า 2">
+    <span class="page-badge">หน้า 2 จาก 10</span>
+    <h2>หน้าที่ 2: Polynomial and Exponential Time</h2>
+    <h3>2.1 ความหมายของ Time Complexity</h3>
+    <p>Time Complexity หรือความซับซ้อนด้านเวลา หมายถึงการวิเคราะห์จำนวนขั้นตอนที่อัลกอริทึมต้องดำเนินการเมื่อขนาดข้อมูลนำเข้าเพิ่มขึ้น โดยทั่วไปจะใช้ n แทนขนาดข้อมูล และใช้สัญลักษณ์ Big O เพื่อแสดงอัตราการเติบโตของจำนวนขั้นตอน โดยไม่จำเป็นต้องระบุเวลาเป็นวินาทีที่แน่นอน</p>
+    <p>การวิเคราะห์แบบนี้ทำให้สามารถเปรียบเทียบอัลกอริทึมได้โดยไม่ขึ้นอยู่กับความเร็วของคอมพิวเตอร์เพียงอย่างเดียว ตัวอย่างเช่น โปรแกรมที่ใช้ขั้นตอนประมาณ n² อาจทำงานได้ดีเมื่อข้อมูลมีขนาดเล็ก แต่เมื่อข้อมูลเพิ่มขึ้นมาก จำนวนขั้นตอนจะเพิ่มขึ้นเร็วกว่าวิธีที่ใช้ขั้นตอนประมาณ n log n</p>
+    
+    <h3>2.2 Polynomial Time</h3>
+    <p>Polynomial Time หรือเวลาพหุนาม หมายถึงเวลาการทำงานที่มีขอบเขตเป็นพหุนามของขนาดข้อมูล เช่น O(n), O(n²), O(n³) หรือโดยทั่วไป O(nᵏ) เมื่อ k เป็นค่าคงที่ที่ไม่ขึ้นกับขนาดข้อมูล</p>
+    <p>อัลกอริทึมที่ใช้เวลาพหุนามมักถือว่ามีประสิทธิภาพในกรอบของทฤษฎีความซับซ้อน แม้ว่าอัลกอริทึมที่เป็นพหุนามบางแบบจะทำงานช้าในทางปฏิบัติหากเลขชี้กำลังหรือค่าคงที่มีขนาดใหญ่ก็ตาม</p>
+    <p>ตัวอย่างเช่น O(n) หมายถึงจำนวนขั้นตอนเติบโตเป็นสัดส่วนกับขนาดข้อมูล หากมีข้อมูลเพิ่มเป็นสองเท่า จำนวนขั้นตอนโดยประมาณก็เพิ่มเป็นสองเท่า ส่วน O(n²) หมายถึงจำนวนขั้นตอนเติบโตตามกำลังสอง หากข้อมูลเพิ่มเป็นสองเท่า จำนวนขั้นตอนโดยประมาณจะเพิ่มเป็นสี่เท่า</p>
+    
+    <h3>2.3 Exponential Time</h3>
+    <p>Exponential Time หรือเวลาเอ็กซ์โพเนนเชียล หมายถึงเวลาการทำงานที่เพิ่มขึ้นตามฟังก์ชันเลขชี้กำลัง เช่น O(2ⁿ) ซึ่งจำนวนขั้นตอนเพิ่มขึ้นอย่างรวดเร็วเมื่อ n เพิ่มขึ้น</p>
+    <p>ตัวอย่างเช่น ปัญหาที่มีตัวแปรแบบบูลีน n ตัว สามารถมีการกำหนดค่าความจริงได้ทั้งหมด 2ⁿ รูปแบบ หากใช้อัลกอริทึมตรวจสอบทุกรูปแบบ จำนวนกรณีที่จะต้องตรวจสอบจะเพิ่มขึ้นเป็นสองเท่าทุกครั้งที่เพิ่มตัวแปรหนึ่งตัว</p>
+    <p>นอกจากนี้ยังมี O(n!) ซึ่งเกี่ยวข้องกับการเรียงลำดับหรือการเลือกเส้นทางจากลำดับที่เป็นไปได้ทั้งหมด โดย n! คือแฟกทอเรียลของ n เช่น 5! = 120 และ 10! = 3,628,800 จำนวนลำดับจะเพิ่มขึ้นอย่างรวดเร็วเมื่อจำนวนสิ่งของเพิ่มขึ้น</p>
+    
+    <h3>2.4 เปรียบเทียบการเติบโตของฟังก์ชัน</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>ความซับซ้อน</th><th>เมื่อ n=10</th><th>เมื่อ n=100</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>O(n)</td><td>10</td><td>100</td></tr>
+          <tr><td>O(n²)</td><td>100</td><td>10,000</td></tr>
+          <tr><td>O(n³)</td><td>1,000</td><td>1,000,000</td></tr>
+          <tr><td>O(2ⁿ)</td><td>1,024</td><td>ประมาณ 1.27×10³⁰</td></tr>
+          <tr><td>O(n!)</td><td>3,628,800</td><td>ประมาณ 9.33×10¹⁵⁷</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>ตัวเลขในตารางแสดงค่าของฟังก์ชันโดยประมาณ ไม่ใช่จำนวนขั้นตอนจริงของทุกอัลกอริทึม เนื่องจากอัลกอริทึมแต่ละแบบมีค่าคงที่และรายละเอียดการทำงานแตกต่างกัน</p>
+    <p>จากตารางจะเห็นว่า O(n) เติบโตช้าที่สุดในกลุ่มที่ยกตัวอย่าง ขณะที่ O(n!) เติบโตเร็วมาก โดยทั่วไป เมื่อ n มีค่ามากพอ ฟังก์ชันแบบเอ็กซ์โพเนนเชียลและแฟกทอเรียลจะทำให้การค้นหาคำตอบทุกกรณีมีต้นทุนสูงมาก</p>
+    
+    <figure>
+      <svg viewBox="0 0 380 250" role="img" aria-label="กราฟการเติบโตของ n, n กำลังสอง และ 2 กำลัง n">
+        <path class="l" d="M40 20V210H350M32 30l8-10 8 10M340 202l10 8-10 8"/>
+        <text x="8" y="16">ขั้นตอน</text>
+        <text x="330" y="235">n</text>
+        <path class="l" d="M40 210L330 130"/>
+        <text x="334" y="134">n</text>
+        <path class="l" stroke-dasharray="8 5" d="M40 210Q220 205 320 50"/>
+        <text x="300" y="40">n²</text>
+        <path class="l" stroke-dasharray="2 6" d="M40 210Q170 208 215 25"/>
+        <text x="190" y="20">2ⁿ</text>
+      </svg>
+      <figcaption>รูปที่ 2 แสดงกราฟการเติบโตเปรียบเทียบระหว่าง O(n), O(n²) และ O(2ⁿ)</figcaption>
+    </figure>
+    
+    <h3>2.5 ตัวอย่างการใช้งาน</h3>
+    <p>การค้นหาข้อมูลแบบ Linear Search เป็นตัวอย่างของ O(n) ส่วนอัลกอริทึมเรียงลำดับแบบ Bubble Sort มีความซับซ้อน O(n²) ในกรณีทั่วไปหรือกรณีเลวร้ายที่สุดตามรูปแบบการใช้งาน ขณะที่การคูณเมทริกซ์แบบพื้นฐานมีความซับซ้อน O(n³) สำหรับเมทริกซ์ขนาด n×n</p>
+    <p>ส่วน O(2ⁿ) อาจเกิดจากการตรวจสอบชุดย่อยทุกชุด และ O(n!) อาจเกิดจากการตรวจสอบลำดับการเดินทางทุกแบบในปัญหาเส้นทางพนักงานขายด้วยวิธี Brute Force</p>
+    
+    <h3>2.6 สรุป</h3>
+    <p>Polynomial Time มีความสำคัญต่อการจำแนกปัญหาใน Class P ขณะที่เวลาที่เติบโตแบบเอ็กซ์โพเนนเชียลหรือแฟกทอเรียลมักทำให้การแก้ปัญหาขนาดใหญ่มีต้นทุนสูง อย่างไรก็ตาม การที่อัลกอริทึมหนึ่งใช้เวลาเอ็กซ์โพเนนเชียลไม่ได้หมายความว่าปัญหานั้นไม่มีอัลกอริทึมพหุนามเสมอไป เพราะอาจมีวิธีแก้ที่ดีกว่าซึ่งยังไม่ถูกค้นพบหรือยังไม่ได้พิจารณา</p>
+  </section>
+
+  <section id="s3" data-t="หน้า 3">
+    <span class="page-badge">หน้า 3 จาก 10</span>
+    <h2>หน้าที่ 3: Complexity Class P</h2>
+    <h3>3.1 ความหมายของ Class P</h3>
+    <p>Class P หรือ Polynomial-Time Class เป็นกลุ่มของปัญหาการตัดสินใจ (Decision Problems) ที่สามารถแก้ได้ด้วยอัลกอริทึมแบบ Deterministic ในเวลาพหุนาม โดยคำว่า Deterministic หมายถึงการคำนวณที่แต่ละขั้นตอนมีการเลือกการทำงานอย่างแน่นอนภายใต้ข้อมูลนำเข้าและสถานะปัจจุบัน</p>
+    <p>การแก้ปัญหาในเวลาพหุนามหมายความว่า เวลาการทำงานมีขอบเขตไม่เกิน O(nᵏ) สำหรับค่าคงที่ k บางค่า โดย n คือขนาดข้อมูลนำเข้า ในทางทฤษฎี ปัญหาใน P จึงถือว่าแก้ได้อย่างมีประสิทธิภาพเมื่อพิจารณาการเติบโตของขนาดข้อมูล</p>
+    <p>อย่างไรก็ตาม การเป็นปัญหาใน P ไม่ได้หมายความว่าโปรแกรมจะต้องทำงานเร็วเสมอไป เพราะอัลกอริทึมที่ใช้ O(n¹⁰⁰) ก็เป็นพหุนามตามนิยาม แม้อาจไม่มีประโยชน์ในทางปฏิบัติสำหรับข้อมูลขนาดใหญ่ ดังนั้นคำว่า “มีประสิทธิภาพ” ในที่นี้เป็นความหมายเชิงทฤษฎีเป็นหลัก</p>
+    
+    <h3>3.2 คุณสมบัติของ Class P</h3>
+    <p>คุณสมบัติสำคัญของ P คือสามารถแก้ปัญหาได้ในเวลาพหุนามโดยใช้แบบจำลองการคำนวณแบบ Deterministic ปัญหาใน P ยังเป็นส่วนหนึ่งของ NP เพราะหากเราสามารถหาคำตอบได้ในเวลาพหุนาม ก็ย่อมสามารถตรวจสอบคำตอบได้ในเวลาพหุนามเช่นกัน</p>
+    <p>อีกประการหนึ่ง ปัญหาใน P มักมีอัลกอริทึมที่สามารถนำไปใช้กับข้อมูลขนาดใหญ่ได้ง่ายกว่าปัญหาที่ต้องใช้เวลาแบบเอ็กซ์โพเนนเชียล ทั้งนี้ต้องพิจารณาค่าคงที่ ขนาดข้อมูล และข้อจำกัดของระบบร่วมด้วย</p>
+    
+    <h3>3.3 ตัวอย่างปัญหาใน P</h3>
+    <p><b>ตัวอย่างที่ 1 ปัญหาการเรียงลำดับข้อมูล (Sorting)</b><br>การเรียงลำดับข้อมูลสามารถทำได้ด้วยอัลกอริทึม เช่น Merge Sort ซึ่งมีความซับซ้อนด้านเวลา O(n log n) ในกรณีทั่วไปและกรณีเลวร้ายที่สุด เมื่อข้อมูลมีจำนวนเพิ่มขึ้น จำนวนขั้นตอนจะเพิ่มขึ้นตามฟังก์ชันพหุนาม จึงจัดอยู่ใน P</p>
+    <p><b>ตัวอย่างที่ 2 ปัญหาการหาเส้นทางสั้นที่สุด</b><br>Shortest Path Problem เป็นปัญหาที่ต้องการหาเส้นทางที่มีผลรวมน้ำหนักหรือระยะทางน้อยที่สุดจากจุดเริ่มต้นไปยังจุดหมาย อัลกอริทึม Dijkstra สามารถแก้ปัญหานี้ได้อย่างมีประสิทธิภาพภายใต้เงื่อนไขว่าน้ำหนักเส้นเชื่อมไม่เป็นลบ ส่วนกรณีที่มีน้ำหนักติดลบสามารถใช้วิธีอื่น เช่น Bellman–Ford ภายใต้เงื่อนไขที่เหมาะสม ปัญหาเหล่านี้มีอัลกอริทึมพหุนามสำหรับรูปแบบมาตรฐาน จึงเป็นตัวอย่างของปัญหาใน P</p>
+    <p><b>ตัวอย่างที่ 3 ปัญหาการเชื่อมต่อของกราฟ (Graph Connectivity)</b><br>ปัญหานี้ต้องการตรวจสอบว่าจุดยอดในกราฟสามารถเดินทางถึงกันได้หรือไม่ โดยสามารถใช้ Breadth-First Search หรือ Depth-First Search สำรวจจุดยอดและเส้นเชื่อมได้ในเวลา O(V+E) เมื่อ V คือจำนวนจุดยอดและ E คือจำนวนเส้นเชื่อม ดังนั้นปัญหาการตรวจสอบการเชื่อมต่อจึงอยู่ใน P</p>
+    <p><b>ตัวอย่างที่ 4 ปัญหาการหาตัวหารร่วมมาก</b><br>การหาตัวหารร่วมมากหรือ Greatest Common Divisor สามารถใช้ Euclidean Algorithm ซึ่งทำงานได้ในเวลาพหุนามตามความยาวของข้อมูลตัวเลข จึงเป็นตัวอย่างของการคำนวณที่มีประสิทธิภาพ</p>
+    
+    <h3>3.4 ความสำคัญของ P ในการแก้ปัญหา</h3>
+    <p>Class P มีบทบาทสำคัญในการพัฒนาซอฟต์แวร์ เนื่องจากเป็นกลุ่มปัญหาที่เราทราบว่ามีวิธีแก้ในเวลาพหุนาม ตัวอย่างการใช้งานได้แก่ การจัดเรียงข้อมูล การค้นหาเส้นทาง การตรวจสอบการเชื่อมต่อเครือข่าย และการคำนวณพื้นฐานทางคณิตศาสตร์</p>
+    <p>การทราบว่าปัญหาอยู่ใน P ยังช่วยให้ผู้พัฒนามั่นใจได้ว่ามีอัลกอริทึมที่มีขอบเขตเวลาการทำงานแบบพหุนาม แม้ยังต้องเลือกวิธีที่เหมาะสมกับข้อมูลจริงอีกครั้งก็ตาม</p>
+    
+    <h3>3.5 สรุป</h3>
+    <p>Class P ประกอบด้วยปัญหาการตัดสินใจที่สามารถแก้ได้ในเวลาพหุนามด้วยอัลกอริทึมแบบ Deterministic ปัญหาในกลุ่มนี้มีความสำคัญต่อการพัฒนาระบบที่ต้องทำงานกับข้อมูลจำนวนมาก ตัวอย่างที่สำคัญ ได้แก่ การเรียงลำดับข้อมูล การหาเส้นทางสั้นที่สุด และการตรวจสอบการเชื่อมต่อของกราฟ</p>
+  </section>
+
+  <section id="s4" data-t="หน้า 4">
+    <span class="page-badge">หน้า 4 จาก 10</span>
+    <h2>หน้าที่ 4: Complexity Class NP</h2>
+    <h3>4.1 ความหมายของ Class NP</h3>
+    <p>Class NP ย่อมาจาก Nondeterministic Polynomial Time เป็นกลุ่มของปัญหาการตัดสินใจที่คำตอบแบบ Yes สามารถตรวจสอบความถูกต้องได้ในเวลาพหุนาม เมื่อได้รับหลักฐานหรือคำตอบประกอบที่เหมาะสม ซึ่งเรียกว่า Certificate</p>
+    <p>แนวคิดสำคัญคือ NP ไม่ได้หมายความว่าปัญหานั้นแก้ยากเสมอไป และไม่ได้หมายความว่าไม่สามารถแก้คำตอบได้ในเวลาพหุนาม แต่เป็นการอธิบายคุณสมบัติของการตรวจสอบคำตอบ โดยปัญหาใน P ทุกปัญหาก็อยู่ใน NP ด้วย เพราะหากแก้ปัญหาได้ในเวลาพหุนาม ก็สามารถตรวจสอบคำตอบได้ในเวลาพหุนามเช่นกัน</p>
+    
+    <h3>4.2 Polynomial-Time Verification</h3>
+    <p>Polynomial-Time Verification หมายถึงการตรวจสอบว่า Certificate ที่ได้รับเป็นหลักฐานของคำตอบแบบ Yes จริงหรือไม่ โดยใช้เวลาไม่เกินพหุนามตามขนาดข้อมูลนำเข้า</p>
+    <p>ตัวอย่างเช่น สมมติว่ามีกราฟหนึ่งกราฟและต้องการตรวจสอบว่ามีเส้นทางที่ผ่านจุดยอดทุกจุดเพียงครั้งเดียวและกลับมายังจุดเริ่มต้นหรือไม่ หากมีผู้เสนอเส้นทางมาให้ เราสามารถตรวจสอบได้ว่าเส้นทางใช้เส้นเชื่อมที่มีอยู่จริงหรือไม่ ผ่านจุดยอดครบทุกจุดหรือไม่ และกลับมายังจุดเริ่มต้นหรือไม่ การตรวจสอบนี้ทำได้โดยไม่จำเป็นต้องค้นหาเส้นทางทุกแบบ</p>
+    
+    <figure>
+      <svg viewBox="0 0 420 90" role="img" aria-label="Certificate เข้าตัวตรวจสอบ ได้ผล Yes หรือ No">
+        <rect class="l" x="5" y="25" width="110" height="40" rx="8"/>
+        <text x="60" y="50" text-anchor="middle">Certificate</text>
+        <path class="l" d="M115 45H165M157 38l8 7-8 7"/>
+        <rect class="l" x="165" y="25" width="120" height="40" rx="8"/>
+        <text x="225" y="50" text-anchor="middle">ตัวตรวจสอบ</text>
+        <path class="l" d="M285 45H335M327 38l8 7-8 7"/>
+        <rect class="l" x="335" y="25" width="80" height="40" rx="8"/>
+        <text x="375" y="50" text-anchor="middle">Yes / No</text>
+      </svg>
+      <figcaption>รูปที่ 3 กระบวนการตรวจสอบ Certificate ในเวลาพหุนาม (Polynomial-Time Verification)</figcaption>
+    </figure>
+    
+    <h3>4.3 ความหมายของ Certificate</h3>
+    <p>Certificate คือข้อมูลที่ใช้เป็นหลักฐานเพื่อแสดงว่าคำตอบของปัญหาเป็น Yes ตัวอย่างเช่น ในปัญหา SAT ซึ่งถามว่าสูตรตรรกศาสตร์มีการกำหนดค่าความจริงที่ทำให้สูตรเป็นจริงหรือไม่ Certificate อาจเป็นชุดค่าความจริงของตัวแปรแต่ละตัว</p>
+    <p>หากมีสูตร F = (x₁ ∨ x₂) ∧ (¬x₁ ∨ x₃) และกำหนด x₁ = True, x₂ = False, x₃ = True เราสามารถแทนค่าลงในสูตรเพื่อตรวจสอบได้ว่าแต่ละส่วนเป็นจริงและสูตรทั้งหมดเป็นจริงหรือไม่ กระบวนการตรวจสอบนี้ทำได้รวดเร็วเมื่อเทียบกับการค้นหาค่าความจริงทุกแบบในกรณีที่มีตัวแปรจำนวนมาก</p>
+    
+    <h3>4.4 ตัวอย่างปัญหาใน NP</h3>
+    <p><b>ตัวอย่างที่ 1 SAT</b><br>SAT ถามว่าสูตรตรรกศาสตร์แบบบูลีนมีการกำหนดค่าความจริงให้ตัวแปรจนทำให้สูตรทั้งหมดเป็นจริงได้หรือไม่ หากมีการกำหนดค่าตัวแปรมาให้ เราสามารถแทนค่าและตรวจสอบสูตรได้ในเวลาพหุนาม ดังนั้น SAT จึงอยู่ใน NP</p>
+    <p><b>ตัวอย่างที่ 2 Hamiltonian Cycle</b><br>ปัญหานี้ถามว่ากราฟมีวงจรที่ผ่านจุดยอดทุกจุดเพียงครั้งเดียวก่อนกลับมายังจุดเริ่มต้นหรือไม่ Certificate คือรายการลำดับจุดยอดของวงจร ซึ่งสามารถตรวจสอบการใช้เส้นเชื่อมและการผ่านจุดยอดได้ในเวลาพหุนาม</p>
+    <p><b>ตัวอย่างที่ 3 Vertex Cover</b><br>ปัญหานี้ถามว่ากราฟมีชุดจุดยอดขนาดไม่เกิน k ที่ครอบคลุมเส้นเชื่อมทุกเส้นหรือไม่ Certificate คือชุดจุดยอดที่เสนอมา จากนั้นตรวจสอบว่าแต่ละเส้นเชื่อมมีปลายอย่างน้อยหนึ่งด้านอยู่ในชุดดังกล่าวหรือไม่ การตรวจสอบสามารถทำได้ในเวลาพหุนาม</p>
+    <p><b>ตัวอย่างที่ 4 Traveling Salesman Problem แบบ Decision</b><br>ปัญหานี้ถามว่ามีเส้นทางแบบวงรอบที่ผ่านทุกเมืองและมีระยะทางรวมไม่เกินค่าที่กำหนดหรือไม่ หากมีการเสนอเส้นทางมาให้ เราสามารถตรวจสอบว่าเดินทางผ่านเมืองครบทุกเมืองและผลรวมระยะทางไม่เกินขอบเขตหรือไม่ในเวลาพหุนาม</p>
+    
+    <h3>4.5 ความแตกต่างระหว่างการแก้ปัญหากับการตรวจสอบคำตอบ</h3>
+    <p>การตรวจสอบคำตอบอาจง่ายกว่าการค้นหาคำตอบมาก ตัวอย่างเช่น การตรวจสอบว่าชุดจุดยอดที่กำหนดเป็น Vertex Cover หรือไม่สามารถทำได้โดยตรวจสอบเส้นเชื่อมทุกเส้น แต่การค้นหาว่ามี Vertex Cover ขนาดไม่เกิน k อยู่หรือไม่ อาจต้องพิจารณาชุดจุดยอดหลายชุด</p>
+    <p>นี่คือเหตุผลสำคัญที่ทำให้ Class NP มีบทบาทในทฤษฎีความซับซ้อน เพราะมีปัญหาหลายประเภทที่เราสามารถตรวจสอบคำตอบได้รวดเร็ว แต่ยังไม่ทราบวิธีหาคำตอบที่มีประสิทธิภาพในทุกกรณี</p>
+    
+    <h3>4.6 สรุป</h3>
+    <p>Class NP ประกอบด้วยปัญหาการตัดสินใจที่คำตอบแบบ Yes มี Certificate ซึ่งสามารถตรวจสอบได้ในเวลาพหุนาม การอยู่ใน NP ไม่ได้หมายความว่าปัญหานั้นต้องแก้ยาก และยังไม่มีข้อพิสูจน์ว่า P เท่ากับ NP หรือไม่ ปัญหา SAT, Hamiltonian Cycle, Vertex Cover และ Traveling Salesman Problem แบบ Decision เป็นตัวอย่างสำคัญของปัญหาใน NP</p>
+  </section>
+
+  <section id="s5" data-t="หน้า 5">
+    <span class="page-badge">หน้า 5 จาก 10</span>
+    <h2>หน้าที่ 5: Relationship Between P and NP</h2>
+    <h3>5.1 ความสัมพันธ์ระหว่าง P และ NP</h3>
+    <p>Class P และ Class NP เป็นกลุ่มความซับซ้อนที่มีความสัมพันธ์กันอย่างใกล้ชิด P ประกอบด้วยปัญหาการตัดสินใจที่สามารถแก้ได้ในเวลาพหุนาม ส่วน NP ประกอบด้วยปัญหาที่คำตอบแบบ Yes สามารถตรวจสอบได้ในเวลาพหุนาม</p>
+    <p>เนื่องจากหากเราสามารถแก้ปัญหาได้ในเวลาพหุนาม เราก็สามารถนำคำตอบที่ได้มาตรวจสอบได้ในเวลาพหุนามเช่นกัน จึงสรุปได้ว่า</p>
+    
+    <div class="callout-box">
+      <p><b>P ⊆ NP</b></p>
+    </div>
+    
+    <p>ความสัมพันธ์นี้หมายความว่าทุกปัญหาใน P อยู่ใน NP แต่ไม่ได้ยืนยันว่าทุกปัญหาใน NP จะอยู่ใน P ด้วยหรือไม่</p>
+    
+    <h3>5.2 ปัญหา P versus NP</h3>
+    <p>P versus NP หรือปัญหา P vs NP เป็นหนึ่งในปัญหาสำคัญของวิทยาการคอมพิวเตอร์เชิงทฤษฎี โดยตั้งคำถามว่า ปัญหาทุกปัญหาที่สามารถตรวจสอบคำตอบแบบ Yes ได้ในเวลาพหุนาม จะสามารถแก้คำตอบได้ในเวลาพหุนามด้วยหรือไม่ กล่าวอีกนัยหนึ่งคือ P เท่ากับ NP หรือไม่</p>
+    <p>หากพิสูจน์ได้ว่า P = NP จะหมายความว่าปัญหาทุกปัญหาใน NP สามารถแก้ได้ในเวลาพหุนาม ซึ่งอาจมีผลอย่างมากต่อการแก้ปัญหาการวางแผน การหาคำตอบที่เหมาะสมที่สุด และการพิสูจน์ทางคณิตศาสตร์บางประเภท อย่างไรก็ตาม ไม่ได้หมายความว่าทุกปัญหาจะง่ายในทางปฏิบัติ เพราะอัลกอริทึมพหุนามอาจมีค่าคงที่สูงหรือมีเลขชี้กำลังขนาดใหญ่</p>
+    <p>หากพิสูจน์ได้ว่า P ≠ NP จะหมายความว่ามีปัญหาบางประเภทที่สามารถตรวจสอบคำตอบได้ในเวลาพหุนาม แต่ไม่สามารถแก้ได้ในเวลาพหุนามด้วยแบบจำลองการคำนวณที่กำหนด</p>
+    <p>จนถึงปัจจุบัน ปัญหา P vs NP ยังเป็นปัญหาเปิด กล่าวคือยังไม่มีข้อพิสูจน์ที่ได้รับการยอมรับทั่วไปว่าสองกลุ่มนี้เท่ากันหรือแตกต่างกัน</p>
+
+    <h3>5.3 ความสำคัญของปัญหา P vs NP</h3>
+    <p>ปัญหานี้มีความสำคัญเพราะเชื่อมโยงกับการค้นหาคำตอบที่ดีที่สุดจากทางเลือกจำนวนมาก เช่น การจัดเส้นทางพนักงานขาย การจัดตารางการผลิต และการวางแผนการขนส่ง หากปัญหาสำคัญใน NP สามารถแก้ได้ในเวลาพหุนาม ก็อาจช่วยเพิ่มประสิทธิภาพการแก้ปัญหาเหล่านี้ได้อย่างมาก</p>
+    <p>อย่างไรก็ตาม การมีอัลกอริทึมที่ตรวจสอบคำตอบได้รวดเร็วไม่ได้รับประกันว่าจะสามารถค้นหาคำตอบได้รวดเร็วเช่นกัน การตรวจสอบเส้นทางที่กำหนดมาให้อาจทำได้ง่าย แต่การค้นหาเส้นทางที่เหมาะสมจากเส้นทางที่เป็นไปได้จำนวนมหาศาลอาจทำได้ยากกว่า</p>
+
+    <h3>5.4 แผนภาพแสดงความสัมพันธ์</h3>
+    <figure>
+      <svg viewBox="0 0 420 220" role="img" aria-label="วงรี P อยู่ภายในวงรี NP">
+        <ellipse class="l" cx="210" cy="110" rx="195" ry="100"/>
+        <text x="210" y="38" text-anchor="middle">NP</text>
+        <text x="210" y="58" text-anchor="middle" style="font-size:12px">ตรวจสอบ Certificate ได้ในเวลาพหุนาม</text>
+        <ellipse class="l" cx="210" cy="140" rx="100" ry="50"/>
+        <text x="210" y="135" text-anchor="middle">P</text>
+        <text x="210" y="155" text-anchor="middle" style="font-size:12px">แก้ได้ในเวลาพหุนาม</text>
+      </svg>
+      <figcaption>รูปที่ 4 แผนภาพเซตแสดงความสัมพันธ์ P ⊆ NP</figcaption>
+    </figure>
+    <p>ภาพนี้แสดงความสัมพันธ์ P ⊆ NP ที่ทราบแน่นอน โดยยังไม่ทราบว่า P = NP หรือ P เป็นส่วนย่อยอย่างแท้จริงของ NP</p>
+
+    <h3>5.5 ความเกี่ยวข้องกับ NP-Complete</h3>
+    <p>ปัญหา NP-Complete เป็นปัญหาที่อยู่ใน NP และเป็น NP-Hard ด้วย ปัญหากลุ่มนี้มีบทบาทสำคัญต่อ P vs NP เพราะหากสามารถแก้ปัญหา NP-Complete ปัญหาใดปัญหาหนึ่งได้ในเวลาพหุนาม จะสามารถใช้ Polynomial-Time Reduction แก้ปัญหาอื่น ๆ ใน NP ได้ในเวลาพหุนามเช่นกัน ดังนั้นจะได้ P = NP</p>
+    <p>ในทางกลับกัน หากพิสูจน์ได้ว่าปัญหา NP-Complete ปัญหาใดปัญหาหนึ่งไม่สามารถแก้ได้ในเวลาพหุนาม ก็จะเป็นหลักฐานว่า P ≠ NP ภายใต้กรอบนิยามมาตรฐาน</p>
+
+    <h3>5.6 สรุป</h3>
+    <p>ความสัมพันธ์ที่ทราบแน่นอนคือ P ⊆ NP แต่คำถามว่า P = NP หรือไม่ยังไม่มีคำตอบที่เป็นที่ยอมรับทั่วไป ปัญหานี้มีความสำคัญต่อการทำความเข้าใจข้อจำกัดของการคำนวณ และเชื่อมโยงกับแนวคิด NP-Hard และ NP-Complete ซึ่งจะอธิบายในหัวข้อต่อไป</p>
+  </section>
+
+  <section id="s6" data-t="หน้า 6">
+    <span class="page-badge">หน้า 6 จาก 10</span>
+    <h2>หน้าที่ 6: NP-Hard Problems</h2>
+    <h3>6.1 ความหมายของ NP-Hard</h3>
+    <p>NP-Hard เป็นคุณสมบัติของปัญหาที่มีความยากอย่างน้อยเทียบเท่ากับทุกปัญหาใน NP ภายใต้ Polynomial-Time Reduction กล่าวคือ หากมีอัลกอริทึมที่แก้ปัญหา NP-Hard ได้ในเวลาพหุนาม และการลดรูปที่เกี่ยวข้องเป็นไปตามเงื่อนไข ก็จะสามารถนำวิธีดังกล่าวไปแก้ปัญหาทุกปัญหาใน NP ได้ในเวลาพหุนามด้วย</p>
+    <p>แนวคิดนี้ไม่ได้หมายความว่าปัญหา NP-Hard ทุกปัญหาจะมีคำตอบที่ตรวจสอบได้ในเวลาพหุนาม และไม่ได้หมายความว่าทุกปัญหา NP-Hard เป็นปัญหาใน NP เพราะนิยามของ NP-Hard ไม่ได้กำหนดให้ปัญหาต้องอยู่ใน NP</p>
+
+    <h3>6.2 คุณสมบัติของ NP-Hard</h3>
+    <p>คุณสมบัติสำคัญคือ ปัญหาใน NP ทุกปัญหาสามารถลดรูปมายังปัญหา NP-Hard ที่กำหนดได้ในเวลาพหุนาม การลดรูปนี้ใช้แสดงว่าปัญหาปลายทางมีความยากอย่างน้อยเท่ากับปัญหาต้นทาง</p>
+    <p>ปัญหา NP-Hard อาจเป็นปัญหาการตัดสินใจ ปัญหาการหาคำตอบที่เหมาะสมที่สุด หรือปัญหาในรูปแบบอื่นก็ได้ ขึ้นอยู่กับนิยามของปัญหาและการเปรียบเทียบความยากที่ใช้</p>
+    <p>ตัวอย่างเช่น Traveling Salesman Problem แบบ Optimization ต้องการหาเส้นทางที่มีระยะทางรวมน้อยที่สุด ไม่ใช่เพียงตอบ Yes หรือ No ปัญหา Optimization รุ่นมาตรฐานนี้เป็น NP-Hard ขณะที่รุ่น Decision ซึ่งถามว่ามีเส้นทางที่มีระยะทางไม่เกิน B หรือไม่ เป็น NP-Complete ภายใต้เงื่อนไขมาตรฐาน</p>
+
+    <h3>6.3 ตัวอย่างปัญหา NP-Hard</h3>
+    <p><b>ตัวอย่างที่ 1 Traveling Salesman Problem แบบ Optimization</b><br>ปัญหานี้ต้องการหาเส้นทางที่ผ่านเมืองแต่ละเมืองและกลับมายังเมืองเริ่มต้น โดยทำให้ระยะทางรวมต่ำที่สุด การตรวจสอบเส้นทางที่กำหนดมาให้ทำได้รวดเร็ว แต่การหาคำตอบที่ดีที่สุดในทุกกรณีเป็นปัญหาที่มีความยากสูง และรุ่น Optimization เป็น NP-Hard</p>
+    <p><b>ตัวอย่างที่ 2 ปัญหา Set Cover แบบ Optimization</b><br>ปัญหานี้กำหนดจักรวาลขององค์ประกอบและชุดย่อยหลายชุด โดยต้องการเลือกชุดย่อยจำนวนต่ำที่สุดให้ครอบคลุมองค์ประกอบทั้งหมด รุ่น Optimization ของปัญหานี้เป็น NP-Hard ส่วนรุ่น Decision ที่ถามว่าสามารถครอบคลุมทั้งหมดด้วยชุดย่อยไม่เกิน k ชุดได้หรือไม่ เป็นปัญหา NP-Complete ในรูปแบบมาตรฐาน</p>
+    <p><b>ตัวอย่างที่ 3 ปัญหา Scheduling แบบ Optimization</b><br>ปัญหาการจัดตารางงานบางประเภทต้องการจัดสรรงานให้เครื่องจักรหรือทรัพยากรโดยลดเวลารวม ลดเวลาที่งานเสร็จช้าที่สุด หรือเพิ่มประสิทธิภาพตามเป้าหมายที่กำหนด ปัญหาการจัดตารางงานหลายรูปแบบเป็น NP-Hard โดยความยากขึ้นอยู่กับข้อจำกัดและนิยามของปัญหา</p>
+
+    <h3>6.4 ความแตกต่างระหว่าง NP กับ NP-Hard</h3>
+    <p>NP เน้นคุณสมบัติการตรวจสอบคำตอบแบบ Yes ด้วย Certificate ในเวลาพหุนาม ขณะที่ NP-Hard เน้นความยากของปัญหาเมื่อเปรียบเทียบกับทุกปัญหาใน NP</p>
+    <p>ปัญหาใน NP-Hard ไม่จำเป็นต้องอยู่ใน NP และอาจไม่มี Certificate ที่ตรวจสอบได้ในเวลาพหุนามตามนิยามมาตรฐาน ดังนั้นจึงไม่ควรกล่าวว่าปัญหา NP-Hard ทุกปัญหาสามารถตรวจสอบคำตอบได้รวดเร็ว</p>
+
+    <h3>6.5 ความสำคัญของ NP-Hard</h3>
+    <p>การจำแนกปัญหาเป็น NP-Hard ช่วยให้นักพัฒนาทราบว่าการค้นหาคำตอบที่ดีที่สุดอาจต้องใช้ทรัพยากรสูง จึงอาจต้องใช้ Approximation Algorithms, Heuristics หรือ Metaheuristics เพื่อค้นหาคำตอบที่ดีภายในเวลาที่จำกัด</p>
+    <p>ตัวอย่างเช่น ระบบขนส่งสินค้าอาจมีเส้นทางที่เป็นไปได้จำนวนมาก หากต้องหาคำตอบที่ดีที่สุดทุกกรณีอาจใช้เวลานาน การใช้วิธีประมาณคำตอบจึงช่วยให้สามารถวางแผนได้จริงมากขึ้น แม้จะไม่รับประกันว่าคำตอบที่ได้ดีที่สุดเสมอไป</p>
+
+    <h3>6.6 สรุป</h3>
+    <p>NP-Hard เป็นการจำแนกความยากของปัญหา โดยทุกปัญหาใน NP สามารถลดรูปมายังปัญหา NP-Hard ได้ในเวลาพหุนาม ปัญหา NP-Hard ไม่จำเป็นต้องอยู่ใน NP ตัวอย่างได้แก่ Traveling Salesman Problem แบบ Optimization, Set Cover แบบ Optimization และปัญหาการจัดตารางงานหลายรูปแบบ</p>
+  </section>
+
+  <section id="s7" data-t="หน้า 7">
+    <span class="page-badge">หน้า 7 จาก 10</span>
+    <h2>หน้าที่ 7: NP-Complete Problems</h2>
+    <h3>7.1 ความหมายของ NP-Complete</h3>
+    <p>NP-Complete เป็นกลุ่มของปัญหาการตัดสินใจที่มีคุณสมบัติสำคัญสองประการ ประการแรก ปัญหาต้องอยู่ใน NP หมายความว่าคำตอบแบบ Yes สามารถตรวจสอบได้ในเวลาพหุนาม ประการที่สอง ปัญหาต้องเป็น NP-Hard หมายความว่าทุกปัญหาใน NP สามารถลดรูปมายังปัญหานั้นได้ในเวลาพหุนาม</p>
+    <p>ดังนั้น หากต้องการพิสูจน์ว่าปัญหาใดเป็น NP-Complete จะต้องพิสูจน์ทั้งสองส่วน ไม่ใช่เพียงแสดงว่าปัญหานั้นแก้ยากหรือมีจำนวนทางเลือกมากเท่านั้น</p>
+
+    <h3>7.2 เงื่อนไขในการพิสูจน์ NP-Completeness</h3>
+    <p>การพิสูจน์โดยทั่วไปประกอบด้วยขั้นตอนต่อไปนี้</p>
+    <p>ขั้นแรก แสดงว่าปัญหาที่ต้องการพิสูจน์อยู่ใน NP โดยอธิบายว่า Certificate คืออะไร และแสดงวิธีตรวจสอบ Certificate ในเวลาพหุนาม</p>
+    <p>ขั้นที่สอง เลือกปัญหาที่ทราบอยู่แล้วว่าเป็น NP-Complete จากนั้นสร้าง Polynomial-Time Reduction จากปัญหานั้นมายังปัญหาใหม่ที่ต้องการพิสูจน์</p>
+    <p>ขั้นที่สาม แสดงว่าการแปลงข้อมูลนำเข้าทำได้ในเวลาพหุนาม และคำตอบของปัญหาต้นทางเป็น Yes ก็ต่อเมื่อคำตอบของปัญหาปลายทางเป็น Yes</p>
+    <p>หากพิสูจน์ได้ครบทั้งสามส่วน ก็สามารถสรุปได้ว่าปัญหาใหม่เป็น NP-Hard และเมื่อรวมกับการอยู่ใน NP จะได้ว่าปัญหานั้นเป็น NP-Complete</p>
+
+    <h3>7.3 ตัวอย่างปัญหา NP-Complete</h3>
+    <p><b>ตัวอย่างที่ 1 SAT</b><br>SAT ถามว่าสูตรตรรกศาสตร์แบบบูลีนมีการกำหนดค่าความจริงที่ทำให้สูตรทั้งหมดเป็นจริงได้หรือไม่ ปัญหานี้อยู่ใน NP เพราะตรวจสอบชุดค่าความจริงที่เสนอมาได้ในเวลาพหุนาม และเป็นปัญหา NP-Complete ตามทฤษฎีบทของ Cook–Levin</p>
+    <p><b>ตัวอย่างที่ 2 3-SAT</b><br>3-SAT เป็นรูปแบบหนึ่งของ SAT ที่แต่ละ Clause มีตัวแปรหรือตัวแปรปฏิเสธไม่เกินสามตัวตามนิยามมาตรฐานของ 3-CNF การตรวจสอบค่าความจริงที่เสนอมาให้ทำได้ในเวลาพหุนาม และปัญหา 3-SAT เป็น NP-Complete</p>
+    <p><b>ตัวอย่างที่ 3 Vertex Cover แบบ Decision</b><br>ปัญหานี้ถามว่ามีชุดจุดยอดขนาดไม่เกิน k ที่ครอบคลุมเส้นเชื่อมทุกเส้นในกราฟหรือไม่ การตรวจสอบชุดจุดยอดที่เสนอมาให้ทำได้ในเวลาพหุนาม และปัญหา Vertex Cover แบบ Decision เป็น NP-Complete</p>
+    <p><b>ตัวอย่างที่ 4 Hamiltonian Cycle</b><br>ปัญหานี้ถามว่ากราฟมีวงจรที่ผ่านจุดยอดทุกจุดเพียงครั้งเดียวก่อนกลับไปยังจุดเริ่มต้นหรือไม่ สามารถตรวจสอบวงจรที่เสนอมาให้ได้ในเวลาพหุนาม และปัญหานี้เป็น NP-Complete สำหรับกราฟทั่วไป</p>
+
+    <h3>7.4 ความแตกต่างระหว่าง NP-Hard กับ NP-Complete</h3>
+    <p>ความแตกต่างที่สำคัญคือ NP-Complete ต้องอยู่ใน NP และต้องเป็น NP-Hard ด้วย ส่วน NP-Hard ต้องมีความยากอย่างน้อยเทียบเท่าทุกปัญหาใน NP แต่ไม่จำเป็นต้องอยู่ใน NP</p>
+    <p>กล่าวอีกนัยหนึ่ง ปัญหา NP-Complete เป็นส่วนหนึ่งของกลุ่ม NP-Hard แต่ปัญหา NP-Hard บางปัญหาอาจไม่ใช่ NP-Complete เพราะอาจเป็นปัญหา Optimization หรือมีลักษณะอื่นที่ไม่อยู่ใน NP ตามนิยามมาตรฐาน</p>
+    <p>หากพบอัลกอริทึมพหุนามสำหรับปัญหา NP-Complete ปัญหานั้นจะทำให้สามารถแก้ทุกปัญหาใน NP ในเวลาพหุนามได้ผ่านการลดรูป ดังนั้นจึงจะได้ P = NP</p>
+
+    <h3>7.5 สรุป</h3>
+    <p>NP-Complete เป็นกลุ่มปัญหาที่มีความสำคัญมากในการศึกษาความซับซ้อน เพราะเป็นปัญหาที่อยู่ใน NP และเป็น NP-Hard ด้วย การพิสูจน์ต้องแสดงทั้งการตรวจสอบคำตอบในเวลาพหุนามและการลดรูปจากปัญหา NP-Complete ที่ทราบอยู่แล้ว ตัวอย่างสำคัญ ได้แก่ SAT, 3-SAT, Vertex Cover และ Hamiltonian Cycle</p>
+  </section>
+
+  <section id="s8" data-t="หน้า 8">
+    <span class="page-badge">หน้า 8 จาก 10</span>
+    <h2>หน้าที่ 8: Polynomial-Time Reduction</h2>
+    <h3>8.1 ความหมายของ Polynomial-Time Reduction</h3>
+    <p>Polynomial-Time Reduction หรือการลดรูปปัญหาในเวลาพหุนาม เป็นเทคนิคสำคัญใน Computational Complexity Theory ใช้แปลงปัญหาหนึ่งให้เป็นอีกปัญหาหนึ่ง โดยต้องใช้เวลาในการแปลงไม่เกินเวลาพหุนาม และต้องรักษาความถูกต้องของคำตอบตามเงื่อนไขของการลดรูป</p>
+    <p>แนวคิดนี้ช่วยให้นักวิจัยเปรียบเทียบความยากของปัญหาได้ หากปัญหา A สามารถลดรูปไปเป็นปัญหา B ในเวลาพหุนาม เราเขียนได้ว่า</p>
+
+    <div class="callout-box">
+      <p><b>A ≤ₚ B</b></p>
+    </div>
+
+    <p>ความหมายคือ หากเรามีวิธีแก้ปัญหา B ที่มีประสิทธิภาพ เราสามารถนำวิธีนั้นมาใช้แก้ปัญหา A ได้ โดยเริ่มจากแปลงข้อมูลของ A ให้เป็นข้อมูลของ B แล้วนำคำตอบของ B กลับมาใช้ตอบ A</p>
+    <p>การลดรูปไม่ได้หมายถึงการทำให้ปัญหาง่ายลงเสมอไป แต่เป็นการแสดงว่าปัญหาหนึ่งสามารถจำลองหรือแปลงให้อยู่ในรูปของอีกปัญหาหนึ่งได้</p>
+
+    <h3>8.2 ความสำคัญของการลดรูป</h3>
+    <p>Polynomial-Time Reduction มีความสำคัญอย่างยิ่งต่อการพิสูจน์ว่าโจทย์เป็น NP-Hard หรือ NP-Complete เพราะเราไม่จำเป็นต้องพิสูจน์ความยากของปัญหาใหม่ทั้งหมดตั้งแต่ต้น หากมีปัญหาที่ทราบอยู่แล้วว่าเป็น NP-Complete เราสามารถใช้ปัญหานั้นเป็นต้นทางในการลดรูปไปยังปัญหาใหม่ได้</p>
+    <p>อย่างไรก็ตาม ต้องระวังทิศทางของการลดรูป หากต้องการพิสูจน์ว่าปัญหา B เป็น NP-Hard เราต้องลดรูปจากปัญหา A ที่ทราบแล้วว่าเป็น NP-Hard หรือ NP-Complete มายัง B ไม่ใช่ลดรูปจาก B ไปยัง A เพราะทิศทางดังกล่าวเพียงอย่างเดียวไม่ได้แสดงว่าปัญหา B ยากเทียบเท่ากับ A</p>
+    <p>นอกจากนี้ การลดรูปต้องรักษาคำตอบให้ถูกต้อง กล่าวคือ อินสแตนซ์ของปัญหาต้นทางต้องตอบ Yes ก็ต่อเมื่ออินสแตนซ์ที่แปลงแล้วของปัญหาปลายทางตอบ Yes เช่นเดียวกัน</p>
+
+    <h3>8.3 ตัวอย่างการลดรูปจาก Vertex Cover ไปยัง Independent Set</h3>
+    <p>พิจารณากราฟ G = (V, E) ซึ่งประกอบด้วยเซตจุดยอด V และเซตเส้นเชื่อม E</p>
+    <p>Vertex Cover คือเซตของจุดยอดที่มีจุดยอดอย่างน้อยหนึ่งด้านของทุกเส้นเชื่อมอยู่ในเซตนั้น ส่วน Independent Set คือเซตของจุดยอดที่ไม่มีเส้นเชื่อมใดเชื่อมระหว่างจุดยอดสองจุดภายในเซต</p>
+    <p>ข้อสังเกตสำคัญคือ เซต C เป็น Vertex Cover ก็ต่อเมื่อส่วนเติมเต็ม V∖C เป็น Independent Set</p>
+    <p>หากกราฟมีจุดยอดทั้งหมด n จุด และต้องการตรวจสอบว่ามี Vertex Cover ขนาดไม่เกิน k หรือไม่ เราสามารถแปลงเป็นคำถามว่า มี Independent Set ขนาดอย่างน้อย n−k หรือไม่ เพราะจำนวนจุดยอดที่อยู่นอก Vertex Cover จะต้องไม่เชื่อมต่อกันด้วยเส้นเชื่อมภายในเซตนั้น</p>
+    <p>ตัวอย่างเช่น สมมติกราฟมีจุดยอด V = {A, B, C} และเส้นเชื่อม E = {(A,B), (B,C)} หากเลือก Vertex Cover เป็น {B} จะครอบคลุมเส้นเชื่อมทั้งสองเส้นได้ ส่วนจุดยอดที่เหลือคือ {A, C} ซึ่งไม่มีเส้นเชื่อมระหว่างกัน จึงเป็น Independent Set</p>
+
+    <figure>
+      <svg viewBox="0 0 420 130" role="img" aria-label="กราฟ A–B–C">
+        <path class="l" d="M80 50H210M210 50H340"/>
+        <circle class="l" cx="70" cy="50" r="20"/>
+        <circle class="l" cx="210" cy="50" r="20"/>
+        <circle class="l" cx="210" cy="50" r="26"/>
+        <circle class="l" cx="350" cy="50" r="20"/>
+        <text x="70" y="56" text-anchor="middle">A</text>
+        <text x="210" y="56" text-anchor="middle">B</text>
+        <text x="350" y="56" text-anchor="middle">C</text>
+        <text x="210" y="105" text-anchor="middle">วงซ้อน B = Vertex Cover</text>
+        <text x="210" y="125" text-anchor="middle" style="font-size:13px">วงเดี่ยว A, C = Independent Set</text>
+      </svg>
+      <figcaption>รูปที่ 5 โครงสร้างกราฟแสดงความสัมพันธ์ของ Vertex Cover และ Independent Set</figcaption>
+    </figure>
+
+    <p>ดังนั้น หากถามว่ากราฟนี้มี Vertex Cover ขนาดไม่เกิน 1 หรือไม่ คำตอบคือ Yes และคำถามที่สอดคล้องกันคือ มี Independent Set ขนาดอย่างน้อย 3−1 = 2 หรือไม่ ซึ่งคำตอบก็เป็น Yes เช่นกัน</p>
+    <p>การแปลงนี้ทำได้ในเวลาพหุนาม เพราะเพียงคำนวณจำนวนจุดยอดและเปลี่ยนค่าเกณฑ์จาก k เป็น n−k โดยใช้กราฟเดิม จึงเป็นตัวอย่างของการลดรูปในเวลาพหุนาม</p>
+
+    <h3>8.4 การใช้ Reduction เพื่อพิสูจน์ NP-Completeness</h3>
+    <p>หากต้องการพิสูจน์ว่า Independent Set เป็น NP-Complete สามารถเริ่มจากปัญหา Vertex Cover ซึ่งทราบอยู่แล้วว่าเป็น NP-Complete แล้วใช้ความสัมพันธ์ระหว่างสองปัญหามาสร้างการลดรูปในเวลาพหุนาม เมื่อแสดงว่าการแปลงรักษาคำตอบ และ Independent Set อยู่ใน NP เพราะตรวจสอบชุดจุดยอดที่เสนอมาได้ในเวลาพหุนาม ก็สามารถสรุปได้ว่า Independent Set เป็น NP-Complete</p>
+    <p>ตัวอย่างการลดรูปจาก 3-SAT ไปยัง Hamiltonian Cycle ก็เป็นเทคนิคมาตรฐานที่ใช้สร้างหลักฐานว่าปัญหา Hamiltonian Cycle เป็น NP-Hard และเมื่อแสดงเพิ่มเติมว่าปัญหานี้อยู่ใน NP ก็จะสรุปความเป็น NP-Complete ได้</p>
+
+    <h3>8.5 ข้อควรระวังในการลดรูป</h3>
+    <p>การลดรูปต้องมีหลักฐานรองรับทั้งเรื่องเวลาที่ใช้แปลงข้อมูลและความสัมพันธ์ของคำตอบ การยกตัวอย่างบางกรณีที่ให้คำตอบเหมือนกันยังไม่เพียงพอที่จะพิสูจน์ว่าการลดรูปถูกต้องสำหรับทุกอินสแตนซ์</p>
+    <p>นอกจากนี้ ต้องใช้ปัญหาต้นทางที่ทราบสถานะความซับซ้อนอย่างถูกต้อง และแสดงว่าการแปลงสามารถดำเนินการได้กับข้อมูลทุกกรณีภายใต้เงื่อนไขของปัญหา</p>
+
+    <h3>8.6 สรุป</h3>
+    <p>Polynomial-Time Reduction เป็นเครื่องมือสำคัญในการเปรียบเทียบความยากของปัญหาและพิสูจน์ NP-Hard หรือ NP-Complete การลดรูปที่ถูกต้องต้องแปลงข้อมูลได้ในเวลาพหุนามและรักษาคำตอบตามนิยาม ตัวอย่างความสัมพันธ์ระหว่าง Vertex Cover และ Independent Set แสดงให้เห็นว่าปัญหาที่มีลักษณะแตกต่างกันสามารถเชื่อมโยงกันผ่านการแปลงที่ถูกต้องได้</p>
+  </section>
+
+  <section id="s9" data-t="หน้า 9">
+    <span class="page-badge">หน้า 9 จาก 10</span>
+    <h2>หน้าที่ 9: Famous NP-Complete Problems</h2>
+    <p>ปัญหา NP-Complete เป็นกลุ่มปัญหาที่สำคัญ เพราะเป็นปัญหาที่อยู่ใน NP และมีความยากเทียบเท่ากับปัญหาทุกปัญหาใน NP ภายใต้ Polynomial-Time Reduction การศึกษาปัญหาตัวอย่างช่วยให้เข้าใจแนวคิดการตรวจสอบคำตอบ การค้นหาคำตอบ และการพิสูจน์ความยากได้ชัดเจนยิ่งขึ้น</p>
+
+    <h3>9.1 Boolean Satisfiability Problem (SAT)</h3>
+    <p>SAT หรือปัญหาความเป็นจริงของสูตรตรรกศาสตร์แบบบูลีน เป็นปัญหาที่ถามว่าสามารถกำหนดค่าความจริงให้ตัวแปรต่าง ๆ เพื่อให้สูตรตรรกศาสตร์ทั้งหมดเป็นจริงได้หรือไม่ ตัวแปรแต่ละตัวสามารถมีค่า True หรือ False และสูตรสามารถประกอบด้วยตัวดำเนินการ เช่น AND, OR และ NOT</p>
+    <p>ตัวอย่างเช่น F = (x ∨ y) ∧ (¬x ∨ z)</p>
+    <p>หากกำหนด x = True, y = False และ z = True จะได้ว่า Clause แรกเป็นจริงเพราะ x เป็นจริง และ Clause ที่สองเป็นจริงเพราะ z เป็นจริง ดังนั้นสูตรทั้งหมดจึงเป็นจริง</p>
+    <p>SAT เป็นปัญหาที่อยู่ใน NP เพราะหากมีชุดค่าความจริงมาให้ เราสามารถตรวจสอบสูตรได้ในเวลาพหุนาม ปัญหานี้ยังเป็น NP-Complete ตามทฤษฎีบท Cook–Levin ซึ่งเป็นรากฐานสำคัญของการศึกษา NP-Completeness</p>
+
+    <h3>9.2 3-SAT</h3>
+    <p>3-SAT เป็นปัญหาย่อยของ SAT ที่สูตรอยู่ในรูป Conjunctive Normal Form หรือ CNF โดยแต่ละ Clause มีตัวแปรหรือตัวแปรปฏิเสธไม่เกินสามตัวตามนิยามที่ใช้ในทฤษฎีความซับซ้อน</p>
+    <p>ตัวอย่างสูตร 3-SAT ได้แก่ F = (x ∨ y ∨ z) ∧ (¬x ∨ y ∨ w)</p>
+    <p>คำถามคือสามารถกำหนดค่าความจริงให้ x, y, z, w เพื่อให้ทุก Clause เป็นจริงพร้อมกันได้หรือไม่ หากกำหนดค่าตัวแปรให้เหมาะสม เราสามารถตรวจสอบสูตรได้โดยประเมินแต่ละ Clause และรวมผลลัพธ์ด้วย AND</p>
+    <p>3-SAT เป็น NP-Complete และมีบทบาทสำคัญในการพิสูจน์ความยากของปัญหาอื่น เนื่องจากสามารถสร้างโครงสร้างทางตรรกศาสตร์เพื่อแปลงไปเป็นปัญหาในรูปแบบกราฟหรือปัญหาการจัดสรรได้</p>
+
+    <h3>9.3 Vertex Cover</h3>
+    <p>Vertex Cover เป็นปัญหาเกี่ยวกับกราฟที่ต้องการเลือกชุดจุดยอดให้ครอบคลุมเส้นเชื่อมทุกเส้น กล่าวคือ ทุกเส้นเชื่อมจะต้องมีปลายอย่างน้อยหนึ่งด้านอยู่ในชุดจุดยอดที่เลือก</p>
+    <p>สำหรับ Vertex Cover แบบ Decision จะถามว่ามี Vertex Cover ที่มีขนาดไม่เกิน k หรือไม่ ตัวอย่างเช่น กราฟที่มีจุดยอด A, B, C และมีเส้นเชื่อม A–B กับ B–C สามารถใช้ชุด {B} ครอบคลุมเส้นเชื่อมทั้งสองเส้นได้ ดังนั้นหาก k = 1 คำตอบคือ Yes</p>
+    <p>Vertex Cover แบบ Decision เป็น NP-Complete เพราะสามารถตรวจสอบชุดจุดยอดที่เสนอมาได้ในเวลาพหุนาม และปัญหานี้มีความยากตามนิยาม NP-Hard ด้วย</p>
+
+    <h3>9.4 Hamiltonian Cycle</h3>
+    <p>Hamiltonian Cycle เป็นปัญหาที่ถามว่ากราฟมีวงจรที่ผ่านจุดยอดทุกจุดเพียงครั้งเดียวก่อนกลับมายังจุดเริ่มต้นหรือไม่ ปัญหานี้แตกต่างจากการหาเส้นทางสั้นที่สุด เพราะไม่ได้พิจารณาว่าน้ำหนักรวมของเส้นเชื่อมต่ำที่สุดหรือไม่ แต่เน้นว่ามีวงจรที่ผ่านทุกจุดยอดครบตามเงื่อนไขหรือไม่</p>
+    <p>ตัวอย่างเช่น หากกราฟมีจุดยอด A, B, C และ D และมีเส้นเชื่อม A–B, B–C, C–D และ D–A จะได้วงจร A–B–C–D–A ซึ่งผ่านจุดยอดทุกจุดครั้งเดียวก่อนกลับมายังจุดเริ่มต้น ดังนั้นกราฟนี้มี Hamiltonian Cycle</p>
+    <p>Hamiltonian Cycle เป็น NP-Complete สำหรับกราฟทั่วไป เพราะสามารถตรวจสอบวงจรที่เสนอมาให้ได้ในเวลาพหุนาม และปัญหานี้เป็น NP-Hard ด้วย</p>
+
+    <h3>9.5 Traveling Salesman Problem แบบ Decision Version</h3>
+    <p>Traveling Salesman Problem หรือ TSP เป็นปัญหาการหาเส้นทางสำหรับพนักงานขายที่ต้องเดินทางไปยังเมืองทุกเมืองและกลับมายังเมืองเริ่มต้น โดยต้องการให้ระยะทางรวมต่ำที่สุด</p>
+    <p>ในรูปแบบ Optimization คำถามคือเส้นทางใดมีระยะทางรวมน้อยที่สุด ส่วน Decision Version จะเปลี่ยนเป็นคำถามว่า มีเส้นทางที่เดินทางผ่านทุกเมืองและกลับมายังเมืองเริ่มต้นโดยมีระยะทางรวมไม่เกินค่า B หรือไม่</p>
+    <p>ตัวอย่างเช่น มีเมือง A, B และ C โดยระยะทาง A–B เท่ากับ 2 กิโลเมตร B–C เท่ากับ 3 กิโลเมตร และ C–A เท่ากับ 4 กิโลเมตร หากกำหนดขอบเขต B = 9 เส้นทาง A–B–C–A มีระยะทางรวม 9 กิโลเมตรพอดี ดังนั้นคำตอบของรุ่น Decision คือ Yes</p>
+    <p>TSP แบบ Decision อยู่ใน NP เพราะสามารถตรวจสอบลำดับเมืองและคำนวณระยะทางรวมได้ในเวลาพหุนาม และเป็น NP-Complete ภายใต้รูปแบบมาตรฐาน ส่วน TSP แบบ Optimization เป็น NP-Hard</p>
+
+    <h3>9.6 การเปรียบเทียบปัญหาทั้งห้า</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>ปัญหา</th><th>สิ่งที่ต้องการตรวจสอบ</th><th>Certificate ตัวอย่าง</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SAT</td><td>สูตรตรรกศาสตร์ทำให้เป็นจริงได้หรือไม่</td><td>ชุดค่าความจริง</td></tr>
+          <tr><td>3-SAT</td><td>สูตร 3-CNF ทำให้เป็นจริงได้หรือไม่</td><td>ชุดค่าความจริง</td></tr>
+          <tr><td>Vertex Cover</td><td>มีชุดจุดยอดขนาดไม่เกิน k หรือไม่</td><td>ชุดจุดยอด</td></tr>
+          <tr><td>Hamiltonian Cycle</td><td>มีวงจรผ่านทุกจุดยอดครบหรือไม่</td><td>ลำดับจุดยอด</td></tr>
+          <tr><td>TSP แบบ Decision</td><td>มีเส้นทางวงรอบที่มีระยะทางไม่เกิน B หรือไม่</td><td>ลำดับเมือง</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>9.7 สรุป</h3>
+    <p>SAT, 3-SAT, Vertex Cover, Hamiltonian Cycle และ TSP แบบ Decision เป็นตัวอย่างสำคัญของปัญหา NP-Complete ปัญหาเหล่านี้มีลักษณะแตกต่างกัน แต่มีคุณสมบัติร่วมกันคือสามารถตรวจสอบ Certificate ของคำตอบแบบ Yes ได้ในเวลาพหุนาม และมีความยากตามนิยาม NP-Hard การศึกษาปัญหาเหล่านี้ช่วยให้เข้าใจการลดรูปและการพิสูจน์ความซับซ้อนของปัญหาอื่น ๆ ได้ดีขึ้น</p>
+  </section>
+
+  <section id="s10" data-t="หน้า 10">
+    <span class="page-badge">หน้า 10 จาก 10</span>
+    <h2>หน้าที่ 10: Approaches to Solving NP-Hard Problems</h2>
+    <h3>10.1 ปัญหาในการแก้ NP-Hard</h3>
+    <p>ปัญหา NP-Hard เป็นปัญหาที่มีความยากอย่างน้อยเทียบเท่ากับทุกปัญหาใน NP ภายใต้ Polynomial-Time Reduction สำหรับปัญหา Optimization หลายประเภท ยังไม่มีอัลกอริทึมที่ทราบว่าสามารถหาคำตอบที่ดีที่สุดได้ในเวลาพหุนามสำหรับทุกกรณี หาก P ≠ NP ก็ไม่สามารถมีอัลกอริทึมพหุนามสำหรับปัญหา NP-Complete ได้</p>
+    <p>อย่างไรก็ตาม การไม่มีอัลกอริทึมพหุนามที่ทราบในปัจจุบันไม่ได้หมายความว่าเราไม่สามารถแก้ปัญหาเหล่านี้ได้เลย นักวิจัยจึงพัฒนาวิธีการหลายแบบเพื่อหาคำตอบที่ดีที่สุดในกรณีขนาดเล็ก หรือหาคำตอบที่ดีและใช้งานได้จริงในกรณีขนาดใหญ่</p>
+    <p>แนวทางสำคัญ ได้แก่ Brute Force, Approximation Algorithms, Heuristics และ Metaheuristics โดยแต่ละวิธีมีจุดเด่นและข้อจำกัดแตกต่างกัน</p>
+
+    <h3>10.2 Brute Force</h3>
+    <p>Brute Force เป็นวิธีแก้ปัญหาที่พิจารณาคำตอบหรือทางเลือกที่เป็นไปได้ทั้งหมด แล้วเปรียบเทียบผลลัพธ์เพื่อหาคำตอบที่ตรงกับเงื่อนไขหรือดีที่สุด วิธีนี้มีข้อดีคือเข้าใจง่าย และหากตรวจสอบครบทุกกรณีอย่างถูกต้อง ก็สามารถรับประกันได้ว่าจะพบคำตอบที่ดีที่สุดเมื่อปัญหามีคำตอบและการค้นหาครอบคลุมทุกกรณี</p>
+    <p>ตัวอย่างเช่น ใน Traveling Salesman Problem เราอาจสร้างลำดับการเดินทางทุกแบบ คำนวณระยะทางรวมของแต่ละเส้นทาง แล้วเลือกเส้นทางที่มีระยะทางน้อยที่สุด วิธีนี้ให้คำตอบที่ดีที่สุด แต่จำนวนเส้นทางเพิ่มขึ้นอย่างรวดเร็วตามจำนวนเมือง โดยอาจเติบโตในระดับแฟกทอเรียล</p>
+    <p>ข้อจำกัดสำคัญคือ Brute Force ไม่เหมาะกับปัญหาขนาดใหญ่ เนื่องจากจำนวนทางเลือกอาจมีมากจนใช้เวลานานเกินไป อย่างไรก็ตาม วิธีนี้ยังมีประโยชน์กับข้อมูลขนาดเล็ก ใช้ตรวจสอบคำตอบของอัลกอริทึมอื่น หรือใช้เป็นวิธีอ้างอิงในการทดลองประสิทธิภาพ</p>
+
+    <h3>10.3 Approximation Algorithms</h3>
+    <p>Approximation Algorithms หรืออัลกอริทึมประมาณค่า เป็นวิธีที่ออกแบบมาเพื่อหาคำตอบที่ดีในเวลาที่มีประสิทธิภาพ โดยไม่จำเป็นต้องได้คำตอบที่ดีที่สุดเสมอไป จุดเด่นของวิธีนี้คือ ในปัญหาที่มีเงื่อนไขเหมาะสม สามารถพิสูจน์ขอบเขตคุณภาพของคำตอบที่ได้เมื่อเทียบกับคำตอบที่ดีที่สุด</p>
+    <p>ตัวอย่างเช่น ในปัญหา Vertex Cover มีอัลกอริทึมประมาณค่าที่ให้คำตอบมีขนาดไม่เกินสองเท่าของคำตอบที่ดีที่สุดสำหรับกราฟทั่วไป โดยใช้แนวคิดการเลือกเส้นเชื่อมที่ยังไม่ถูกครอบคลุม แล้วเลือกจุดยอดปลายทั้งสองด้านของเส้นเชื่อมนั้นเข้าชุดคำตอบ จากนั้นทำซ้ำกับเส้นเชื่อมที่ยังเหลือและไม่ติดกับเส้นเชื่อมที่เลือกไว้</p>
+    <p>อีกตัวอย่างหนึ่งคือปัญหา Set Cover ซึ่งต้องการเลือกชุดย่อยจำนวนต่ำที่สุดให้ครอบคลุมองค์ประกอบทั้งหมด อัลกอริทึมแบบ Greedy สามารถเลือกชุดที่ครอบคลุมองค์ประกอบที่ยังไม่ถูกครอบคลุมได้มากที่สุดในแต่ละขั้นตอน วิธีนี้มีขอบเขตคุณภาพที่วิเคราะห์ได้ แม้ไม่รับประกันว่าจะได้คำตอบที่ดีที่สุดเสมอไป</p>
+    <p>Approximation Algorithms มีประโยชน์เมื่อผู้ใช้ต้องการคำตอบที่มีคุณภาพและต้องการหลักประกันทางคณิตศาสตร์เกี่ยวกับความคลาดเคลื่อนจากคำตอบที่ดีที่สุด ทั้งนี้ไม่ใช่ทุกปัญหา NP-Hard จะมีอัลกอริทึมประมาณค่าที่มีคุณสมบัติที่ต้องการได้ง่าย และบางปัญหาอาจมีข้อจำกัดในการประมาณค่าอย่างเข้มงวด</p>
+
+    <h3>10.4 Heuristics</h3>
+    <p>Heuristics หรือวิธีฮิวริสติก เป็นวิธีแก้ปัญหาที่ใช้กฎ ประสบการณ์ หรือแนวทางที่ช่วยลดจำนวนการค้นหา เพื่อให้ได้คำตอบที่ดีในเวลาจำกัด วิธีนี้ไม่จำเป็นต้องมีหลักประกันทางคณิตศาสตร์ว่าคำตอบจะใกล้เคียงกับคำตอบที่ดีที่สุดเพียงใด</p>
+    <p>ตัวอย่างเช่น ในปัญหา Traveling Salesman Problem อาจใช้วิธี Nearest Neighbor โดยเริ่มจากเมืองหนึ่ง แล้วเดินทางไปยังเมืองที่ยังไม่เคยเยี่ยมชมและอยู่ใกล้ที่สุด ทำซ้ำจนผ่านทุกเมือง จากนั้นจึงกลับไปยังเมืองเริ่มต้น</p>
+    <p>วิธี Nearest Neighbor เข้าใจง่ายและทำงานได้รวดเร็วเมื่อเทียบกับการตรวจสอบทุกเส้นทาง แต่เส้นทางที่ได้อาจไม่ใช่เส้นทางที่ดีที่สุด และบางกรณีอาจมีระยะทางรวมสูงกว่าคำตอบที่ดีที่สุดมาก</p>
+    <p>ข้อดีของ Heuristics คือสามารถออกแบบให้เหมาะกับปัญหาเฉพาะด้านได้ เช่น การจัดตารางเรียน การวางแผนการผลิต การจัดเส้นทางขนส่ง และการจัดสรรทรัพยากร ข้อเสียคือคุณภาพของคำตอบขึ้นอยู่กับกฎที่ออกแบบและลักษณะของข้อมูล</p>
+
+    <h3>10.5 Metaheuristics</h3>
+    <p>Metaheuristics เป็นกรอบวิธีค้นหาคำตอบระดับสูงที่ใช้แนวคิดการสำรวจและปรับปรุงคำตอบ เพื่อค้นหาคำตอบที่ดีในพื้นที่ค้นหาขนาดใหญ่ วิธีเหล่านี้มักใช้ร่วมกับ Heuristics และไม่ได้รับประกันว่าจะพบคำตอบที่ดีที่สุดในทุกกรณี แต่มีประโยชน์กับปัญหา Optimization ที่ซับซ้อน</p>
+    <p>ตัวอย่างวิธี Metaheuristics ได้แก่</p>
+    <p><b>Genetic Algorithm</b> ใช้แนวคิดที่คล้ายกับวิวัฒนาการ โดยสร้างกลุ่มคำตอบหลายชุด แล้วคัดเลือกคำตอบที่มีคุณภาพมาสร้างคำตอบรุ่นใหม่ผ่านกระบวนการ เช่น Crossover และ Mutation วิธีนี้อาจใช้กับการจัดเส้นทาง การจัดตารางงาน และการออกแบบระบบ</p>
+    <p><b>Simulated Annealing</b> ใช้แนวคิดจากการอบและทำให้วัสดุเย็นลง โดยเริ่มจากคำตอบหนึ่งแล้วสุ่มเปลี่ยนคำตอบเป็นคำตอบข้างเคียง บางครั้งอาจยอมรับคำตอบที่แย่ลงเพื่อช่วยหลีกเลี่ยงการติดอยู่ในคำตอบเฉพาะที่ และค่อย ๆ ลดโอกาสยอมรับคำตอบที่แย่ลงเมื่อกระบวนการดำเนินต่อไป</p>
+    <p><b>Tabu Search</b> เป็นวิธีค้นหาที่ใช้รายการ Tabu เพื่อป้องกันการย้อนกลับไปยังคำตอบหรือการเคลื่อนไหวบางอย่างที่เพิ่งใช้ ช่วยลดการวนซ้ำและส่งเสริมการสำรวจพื้นที่ค้นหาใหม่</p>
+    <p>Metaheuristics มีประโยชน์ในปัญหาที่มีตัวแปรและข้อจำกัดจำนวนมาก เช่น การวางแผนการผลิต การจัดตารางพนักงาน และการวางเส้นทางรถขนส่ง อย่างไรก็ตาม ผลลัพธ์อาจขึ้นอยู่กับการตั้งค่าพารามิเตอร์ วิธีแทนคำตอบ และเงื่อนไขหยุดการค้นหา</p>
+
+    <h3>10.6 การเปรียบเทียบแนวทางแก้ปัญหา</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>วิธี</th><th>จุดเด่น</th><th>ข้อจำกัด</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Brute Force</td><td>หาคำตอบดีที่สุดได้หากตรวจสอบครบทุกกรณี</td><td>ใช้เวลาสูงเมื่อข้อมูลใหญ่</td></tr>
+          <tr><td>Approximation</td><td>มีขอบเขตคุณภาพคำตอบในปัญหาที่เหมาะสม</td><td>อาจไม่พบคำตอบดีที่สุด</td></tr>
+          <tr><td>Heuristics</td><td>เรียบง่ายและออกแบบเฉพาะปัญหาได้</td><td>ไม่มีหลักประกันคุณภาพทั่วไป</td></tr>
+          <tr><td>Metaheuristics</td><td>สำรวจพื้นที่ค้นหาขนาดใหญ่ได้</td><td>ผลลัพธ์ขึ้นกับวิธีและพารามิเตอร์</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>10.7 ตัวอย่างการประยุกต์ใช้จริง</h3>
+    <p>ในระบบขนส่งสินค้า บริษัทอาจต้องกำหนดเส้นทางรถให้ผ่านลูกค้าหลายรายโดยลดระยะทางรวมและต้นทุนเชื้อเพลิง การใช้ Brute Force อาจเหมาะกับจำนวนจุดส่งน้อย แต่ไม่เหมาะกับการส่งสินค้าหลายร้อยจุด</p>
+    <p>บริษัทจึงอาจใช้ Approximation Algorithm เพื่อให้ได้คำตอบที่มีขอบเขตคุณภาพ หรือใช้ Heuristics เพื่อค้นหาเส้นทางที่ดีอย่างรวดเร็ว หากปัญหามีข้อจำกัดจำนวนมาก อาจใช้ Metaheuristics เช่น Genetic Algorithm เพื่อปรับปรุงเส้นทางหลายรอบและเลือกคำตอบที่เหมาะสมกับเป้าหมายของระบบ</p>
+    <p>ตัวอย่างนี้แสดงให้เห็นว่า การแก้ปัญหา NP-Hard ในทางปฏิบัติไม่ได้มีวิธีเดียว แต่ต้องเลือกเทคนิคให้เหมาะกับขนาดปัญหา เวลา งบประมาณ และคุณภาพคำตอบที่ต้องการ</p>
+
+    <h3>10.8 สรุปความรู้ที่ได้รับจากการศึกษา</h3>
+    <p>จากการศึกษาทฤษฎีความซับซ้อนในการคำนวณ ทำให้เข้าใจว่าปัญหาคอมพิวเตอร์มีระดับความยากแตกต่างกัน และไม่ใช่ทุกปัญหาจะมีวิธีแก้ที่มีประสิทธิภาพเท่ากัน Class P ประกอบด้วยปัญหาที่แก้ได้ในเวลาพหุนาม ส่วน Class NP ประกอบด้วยปัญหาที่ตรวจสอบ Certificate ของคำตอบแบบ Yes ได้ในเวลาพหุนาม NP-Hard ใช้แสดงความยากที่อย่างน้อยเทียบเท่าปัญหาทุกปัญหาใน NP และ NP-Complete เป็นปัญหาที่อยู่ใน NP พร้อมทั้งเป็น NP-Hard ด้วย</p>
+    <p>นอกจากนี้ Polynomial-Time Reduction ยังเป็นเครื่องมือสำคัญในการพิสูจน์ความยากของปัญหา โดยแปลงปัญหาที่ทราบสถานะแล้วไปยังปัญหาที่ต้องการศึกษา ส่วนการแก้ปัญหา NP-Hard ในทางปฏิบัติอาจต้องเลือกใช้ Brute Force, Approximation Algorithms, Heuristics หรือ Metaheuristics ให้เหมาะสมกับสถานการณ์</p>
+    <p>โดยสรุป Computational Complexity Theory ไม่เพียงช่วยจำแนกปัญหาทางคอมพิวเตอร์ แต่ยังช่วยให้นักพัฒนาตัดสินใจได้อย่างมีเหตุผลว่าจะค้นหาคำตอบที่ดีที่สุด ใช้วิธีประมาณค่า หรือออกแบบวิธีค้นหาเฉพาะสำหรับปัญหานั้นอย่างไร</p>
+  </section>
+
+  <section id="s11" data-t="บรรณานุกรม">
+    <span class="page-badge">อ้างอิง</span>
+    <h2>บรรณานุกรมและแหล่งค้นคว้าจากเว็บไซต์</h2>
+    <p>1. University of Cambridge. Complexity Theory: Course Materials. เอกสารประกอบการเรียนเกี่ยวกับ Computational Complexity Theory, P, NP และ NP-Completeness<br>
+    <a href="https://www.cl.cam.ac.uk/teaching/2526/Complexity/materials.html" target="_blank" rel="noopener">https://www.cl.cam.ac.uk/teaching/2526/Complexity/materials.html</a></p>
+
+    <p>2. Princeton University. Polynomial-Time Reductions. เอกสารเกี่ยวกับการลดรูปปัญหาในเวลาพหุนามและความสัมพันธ์ของปัญหา NP-Complete<br>
+    <a href="https://www.cs.princeton.edu/~wayne/kleinberg-tardos/pearson/08PolynomialTimeReductions.pdf" target="_blank" rel="noopener">https://www.cs.princeton.edu/~wayne/kleinberg-tardos/pearson/08PolynomialTimeReductions.pdf</a></p>
+
+    <p>3. OpenDSA, Virginia Tech. Reduction of 3-SAT to Hamiltonian Cycle. ตัวอย่างการลดรูปปัญหา 3-SAT ไปยัง Hamiltonian Cycle<br>
+    <a href="https://opendsa.cs.vt.edu/ODSA/Books/cnu/cpsc270/spring-2025/CNUCPSC270SP25/html/threeSAT_to_hamiltonianCycle.html" target="_blank" rel="noopener">https://opendsa.cs.vt.edu/ODSA/Books/cnu/cpsc270/spring-2025/CNUCPSC270SP25/html/threeSAT_to_hamiltonianCycle.html</a></p>
+
+    <p>4. EPFL. Approximation Algorithms. เอกสารเกี่ยวกับอัลกอริทึมประมาณค่าและการแก้ปัญหา Optimization ที่มีความซับซ้อนสูง<br>
+    <a href="https://www.epfl.ch/labs/disopt/teaching/page-31582-en-html/page-10556-en-html/" target="_blank" rel="noopener">https://www.epfl.ch/labs/disopt/teaching/page-31582-en-html/page-10556-en-html/</a></p>
+
+    <p>5. Stanford University. Approximation Algorithms. เนื้อหาเกี่ยวกับการออกแบบอัลกอริทึมเพื่อหาคำตอบที่ใกล้เคียงคำตอบที่ดีที่สุด<br>
+    <a href="https://web.stanford.edu/class/msande319/Approximation%20Algorithm/index.html" target="_blank" rel="noopener">https://web.stanford.edu/class/msande319/Approximation%20Algorithm/index.html</a></p>
+  </section>
+</main>
+
+<script>
+// Safely handle localStorage
+function safeStorage(fn) {
+  try { return fn(); } catch(e) { return null; }
+}
+
+const navScroll = document.getElementById("nav-scroll");
+const sections = document.querySelectorAll("section");
+const totalPages = 10;
+let fs = 18;
+
+// Build Navigation & Checkboxes
+sections.forEach(function(s, index) {
+  // Add nav link
+  const a = document.createElement("a");
+  a.href = "#" + s.id;
+  a.textContent = s.dataset.t;
+  a.dataset.id = s.id;
+  navScroll.appendChild(a);
+  // Navigate immediately instead of smooth scrolling, which can stutter on long pages.
+  a.addEventListener("click", function(event) {
+    const target = document.getElementById(s.id);
+    if (!target) return;
+    event.preventDefault();
+    history.replaceState(null, "", "#" + s.id);
+    target.scrollIntoView({ behavior: "auto", block: "start" });
+    navScroll.querySelectorAll("a").forEach(function(link) {
+      link.classList.toggle("on", link.dataset.id === s.id);
+    });
+  });
+
+  // Add done checkbox only to document pages (s1 to s10)
+  if (index < totalPages) {
+    const doneDiv = document.createElement("div");
+    doneDiv.className = "done-container";
+
+    const label = document.createElement("label");
+    label.className = "done";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = "cb-" + s.id;
+    cb.checked = safeStorage(function() { return localStorage.getItem("done-" + s.id); }) === "1";
+    
+    cb.addEventListener("change", function() {
+      safeStorage(function() { localStorage.setItem("done-" + s.id, cb.checked ? "1" : "0"); });
+      updateStats();
+    });
+
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode("คัดหน้านี้แล้ว"));
+    doneDiv.appendChild(label);
+    s.appendChild(doneDiv);
+  }
+});
+
+// Update Completed Pages Count
+function updateStats() {
+  let count = 0;
+  for (let i = 1; i <= totalPages; i++) {
+    if (safeStorage(function() { return localStorage.getItem("done-s" + i); }) === "1") {
+      count++;
+    }
+  }
+  const statEl = document.getElementById("completed-count");
+  if (statEl) {
+    statEl.textContent = `✅ คัดแล้ว ${count}/${totalPages} หน้า`;
+  }
+}
+updateStats();
+
+// ScrollSpy & Navigation Active State
+const observerOptions = {
+  rootMargin: "-10% 0px -75% 0px",
+  threshold: 0
+};
+
+const observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      navScroll.querySelectorAll("a").forEach(function(a) {
+        const isCurrent = a.dataset.id === entry.target.id;
+        a.classList.toggle("on", isCurrent);
+      });
+    }
+  });
+}, observerOptions);
+
+sections.forEach(function(s) { observer.observe(s); });
+
+// Font Size Controls
+function setFontSize(v) {
+  fs = Math.max(14, Math.min(28, v));
+  document.body.style.fontSize = fs + "px";
+}
+
+document.getElementById("p").onclick = function() { setFontSize(fs + 2); };
+document.getElementById("m").onclick = function() { setFontSize(fs - 2); };
+document.getElementById("reset-fs").onclick = function() { setFontSize(18); };
+
+// Theme Toggle
+const themeBtn = document.getElementById("btn-theme");
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  themeBtn.textContent = theme === "dark" ? "☀️ Light" : "🌙 Dark";
+  safeStorage(function() { localStorage.setItem("doc-theme", theme); });
+}
+
+const savedTheme = safeStorage(function() { return localStorage.getItem("doc-theme"); }) || "light";
+applyTheme(savedTheme);
+
+themeBtn.onclick = function() {
+  const current = document.documentElement.getAttribute("data-theme");
+  applyTheme(current === "dark" ? "light" : "dark");
+};
+
+// Scroll Progress Bar
+window.addEventListener("scroll", function() {
+  const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrolled = (winScroll / height) * 100;
+  document.getElementById("progress-bar").style.width = scrolled + "%";
+});
+
+// Search Feature
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("input", function() {
+  const query = this.value.trim().toLowerCase();
+  
+  sections.forEach(s => {
+    if (!query) {
+      s.style.display = "";
+      return;
+    }
+    const text = s.textContent.toLowerCase();
+    if (text.includes(query)) {
+      s.style.display = "";
+    } else {
+      s.style.display = "none";
+    }
+  });
+});
+</script>
+</body>
+</html>
